@@ -31,20 +31,11 @@ int main()
     }
 
     // sockaddr_in 구조체를 이용해 ip 주소, port 번호를 소켓에 바인딩
-    // address.sin_addr.s_addr = ::inet_addr("127.0.0.1"); inet_addr은 구버전 함수이기에 컴파일러에서 경고발생
     sockaddr_in address;
     std::memset(&address, 0, sizeof(sockaddr_in));
     address.sin_family = AF_INET;                       // ip 프로토콜 (ip 버전)
     address.sin_port = ::htons(PORT_NUMBER);            // 포트 번호
-    int ptonResult = ::inet_pton(AF_INET, "127.0.0.1", &address.sin_addr.s_addr); // ip 주소
-    if (0 == ptonResult) {
-        std::cout << "IP 주소 형식이 지정한 IP 버전과 맞지 않음\n";
-        return EXIT_FAILURE;
-    }
-    else if (-1 == ptonResult) {
-        // 에러 핸들링
-        return EXIT_FAILURE;
-    }
+    address.sin_addr.s_addr = ::htonl(INADDR_ANY);      // 서버로 들어오는 모든 ip를 받도록 설정
     
     // 위 코드에서 입력한 내용을 소켓에 바인딩
     if (SOCKET_ERROR == ::bind(socket, reinterpret_cast<sockaddr*>(&address), sizeof(sockaddr_in))) {
@@ -61,8 +52,8 @@ int main()
     }
 
     sockaddr_in clientAddr;
-    int clientAddrLen{ };
-    // 실제 연결 대기중인 소켓과 연결, 결과 값으로 연결된 소켓을 반환
+    int clientAddrLen{ sizeof(sockaddr_in) };
+    // 실제 연결 대기중인 소켓과 연결, 결과 값으로 소켓을 반환
     SOCKET clientSocket = ::accept(socket, reinterpret_cast<sockaddr*>(&clientAddr), &clientAddrLen);
     if (INVALID_SOCKET == clientSocket) {
         // 에러 핸들링 추가
@@ -71,7 +62,7 @@ int main()
     /* ------------------------ 여기까지 무사히 실행 되었다면 연결완료 ------------------------ */
 
     // 테스트용 send 잘 가는지는 클라이언트 부분을 만들어서 확인!
-    // 주의! 처음에 만든 소켓은 서버에서 클라이언트와 연결을 위한 소켓임, 보낼때는 accept에서 반환된 소켓을 이용
+    // 주의! 처음에 만든 소켓은 서버에서 클라이언트와 연결을 위한 소켓임, accept를 위해 생성한 소켓을 이용
     char sendData[SEND_SIZE]{ "Test Send Data To Client" };
     if (SOCKET_ERROR == ::send(clientSocket, sendData, SEND_SIZE, 0)) {
         // 에러 핸들링 추가
@@ -92,4 +83,9 @@ int main()
         // 에러 핸들링
         return EXIT_FAILURE;
     }
+
+    // 시작 프로젝트를 여러개로 지정했을 때 바로 끝나지 않게 하기위해 작성
+    char ch{ };
+    std::cout << "끝내려면 엔터키를 눌러주세요.";
+    ch = ::getchar();
 }
