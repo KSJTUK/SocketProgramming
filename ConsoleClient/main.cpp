@@ -11,11 +11,35 @@
 constexpr unsigned short PORT_NUMBER = 7777;
 constexpr unsigned short RECV_SIZE = 1024;
 
+// 소켓 오류 코드를 확인하고 그에 맞는 오류내용을 출력
+void HandleSocketError(const char* cause = nullptr)
+{
+    int socketErrorCode = ::WSAGetLastError();
+
+    wchar_t errorMessageBuf[BUFSIZ]{ };
+    ::FormatMessage(
+        FORMAT_MESSAGE_FROM_SYSTEM,
+        nullptr,
+        socketErrorCode,
+        MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT),
+        errorMessageBuf,
+        BUFSIZ,
+        nullptr
+    );
+
+    if (cause) {
+        std::cout << cause << "\n";
+    }
+
+    std::cout << "Last Error Code: " << socketErrorCode << "\n";
+    std::wcout << L"Formatted Error Message:" << errorMessageBuf << "\n";
+}
+
 int main()
 {
     WSAData wsaData;
     if (0 != ::WSAStartup(MAKEWORD(2, 2), &wsaData)) {
-        // 에러 핸들링 추가
+        HandleSocketError();
         return EXIT_FAILURE;
     }
 
@@ -36,13 +60,13 @@ int main()
         return EXIT_FAILURE;
     }
     else if (-1 == ptonResult) {
-        // 에러 핸들링
+        HandleSocketError();
         return EXIT_FAILURE;
     }
 
     // 해당 ip주소, 포트번호를 이용하여 실제로 서버와 연결하는 부분
     if (SOCKET_ERROR == ::connect(socket, reinterpret_cast<sockaddr*>(&address), sizeof(sockaddr_in))) {
-        // 에러 핸들링 추가
+        HandleSocketError();
         return EXIT_FAILURE;
     }
 
@@ -58,7 +82,7 @@ int main()
         ::WSACleanup();
     }
     else if (SOCKET_ERROR == len) {
-        // 에러 핸들링
+        HandleSocketError();
         return EXIT_FAILURE;
     }
 
