@@ -3,12 +3,15 @@
 // 여기에서는 Base 프로젝트에서 사용되지 않았던 함수들만 설명할 예정.
 #include <iostream>
 
+#define NOMINMAX
+
 #include <winsock2.h>
 #include <WS2tcpip.h>
 
 #pragma comment(lib, "ws2_32.lib")
 
 constexpr unsigned short PORT_NUMBER = 7777;
+constexpr unsigned short SEND_SIZE = 1024;
 constexpr unsigned short RECV_SIZE = 1024;
 
 // 소켓 오류 코드를 확인하고 그에 맞는 오류내용을 출력
@@ -70,24 +73,64 @@ int main()
         return EXIT_FAILURE;
     }
 
-    // 테스트용 recv
-    // 서버에서 한번 send하므로 여기서도 한번 recv 하도록 작성
-    // recv함수는 send함수와는 다르게 받은 데이터의 길이(수신한 바이트)를 반환함.
-    // 0 -> 연결이 종료됨, SOCKET_ERROR -> 에러
-    char recvData[RECV_SIZE]{ };
-    int len = ::recv(socket, recvData, RECV_SIZE, 0);
-    if (0 == len) {
-        std::cout << "연결이 종료됨.\n";
-        ::closesocket(socket);
-        ::WSACleanup();
-    }
-    else if (SOCKET_ERROR == len) {
-        HandleSocketError();
-        return EXIT_FAILURE;
-    }
+    std::cout << "연결 성공!\n";
 
-    std::cout << "수신 바이트 수: " << len << "\n";
-    std::cout << "내용: " << recvData << "\n";
+    std::string sendData{ };
+    char recvData[RECV_SIZE]{ };
+    while (true) {
+        sendData.clear();
+        std::memset(recvData, 0, SEND_SIZE);
+
+        // 보냈으면 받기
+        // recv함수는 send함수와는 다르게 받은 데이터의 길이(수신한 바이트)를 반환함.
+        // 0 -> 연결이 종료됨, SOCKET_ERROR -> 에러
+        std::cout << "----------------------------------------\n\n";
+        std::cout << "수신 대기...\n\n";
+        int len = ::recv(socket, recvData, RECV_SIZE, 0);
+        if (0 == len) {
+            std::cout << "연결 종료.\n";
+            break;
+        }
+        else if (SOCKET_ERROR == len) {
+            HandleSocketError();
+            break;
+        }
+        else if ('\0' != recvData[RECV_SIZE - 1]) {
+            std::cout << "recv 한도 초과\n";
+            break;
+        }
+
+        std::cout << "수신 바이트 수: " << len << "\n";
+        std::cout << "내용: " << recvData << "\n\n";
+        std::cout << "----------------------------------------\n\n";
+
+        // 보낼 문자열 입력 받기 및, 입력제한 조건 설정
+        std::cout << "보낼 문자열을 입력해주세요 (끝내려면 quit 입력, 입력 제한 1023자): ";
+        std::cin >> sendData;
+
+        size_t dataSize = sendData.size();
+        if (SEND_SIZE <= dataSize) {
+            std::cout << "입력제한 1023자를 넘어섰습니다. 다시 입력해주세요.\n";
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<int>::max(), '\n');
+            continue;
+        }
+
+        // 끝나는지?
+        if (0 == std::strcmp(sendData.c_str(), "quit")) {
+            break;
+        }
+
+        // 문자열 보내기
+        if (SOCKET_ERROR == ::send(socket, sendData.c_str(), dataSize, 0)) {
+            HandleSocketError();
+            return EXIT_FAILURE;
+        }
+        std::cout << "보내기 완료.\n\n";
+        std::cout << "----------------------------------------\n\n";
+
+        // 다 받으면 다시 반복
+    }
 
     ::closesocket(socket);
     ::WSACleanup();

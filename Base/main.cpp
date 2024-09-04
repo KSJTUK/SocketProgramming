@@ -1,5 +1,9 @@
 ﻿#include <iostream>
 
+// Windows의 매크로 함수 min, max 사용중지를 위한 코드
+// std::min, max와의 충돌 가능성 때문에 사용
+#define NOMINMAX
+
 // 소켓 프로그래밍을 위한 헤더
 #include <WinSock2.h>
 #include <WS2tcpip.h>
@@ -7,10 +11,14 @@
 // ws2_32 라이브러리, ws2_32.dll과 링크
 #pragma comment(lib, "ws2_32.lib")
 
+// STL 헤더
+#include <numeric>
+
 // 사용할 포트 번호 정의, 포트 번호는 16비트 정수를 이용 (unsigned short)
 constexpr unsigned short PORT_NUMBER = 7777;
 // 테스트용으로 보낼 문자열의 최대 길이 정의
 constexpr unsigned short SEND_SIZE = 1024;
+constexpr unsigned short RECV_SIZE = 1024;
 
 // 소켓 오류 코드를 확인하고 그에 맞는 오류내용을 출력
 void HandleSocketError(const char* cause = nullptr)
@@ -83,17 +91,75 @@ int main()
         HandleSocketError();
         return EXIT_FAILURE;
     }
+    std::cout << "연결 성공!\n";
     /* ------------------------ 여기까지 무사히 실행 되었다면 연결완료 ------------------------ */
 
     // 테스트용 send 잘 가는지는 클라이언트 부분을 만들어서 확인!
     // 주의! 처음에 만든 소켓은 서버에서 클라이언트와 연결을 위한 소켓임, accept를 위해 생성한 소켓을 이용
-    char sendData[SEND_SIZE]{ "Test Send Data" };
-    if (SOCKET_ERROR == ::send(clientSocket, sendData, SEND_SIZE, 0)) {
-        HandleSocketError();
-        return EXIT_FAILURE;
+    
+    std::string sendData{ };
+    char recvData[RECV_SIZE]{ };
+    while (true) {
+        sendData.clear();
+        std::memset(recvData, 0, SEND_SIZE);
+
+        std::cout << "----------------------------------------\n\n";
+        // 보낼 문자열 입력 받기 및, 입력제한 조건 설정
+        std::cout << "보낼 문자열을 입력해주세요 (끝내려면 quit 입력, 입력제한 1023자): ";
+        std::cin >> sendData;
+
+        size_t dataSize = sendData.size();
+        if (SEND_SIZE <= dataSize) {
+            std::cout << "입력제한 1023자를 넘어섰습니다. 다시 입력해주세요.\n";
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<int>::max() , '\n');
+            continue;
+        }
+
+        std::cout << "보내기 완료.\n\n";
+        std::cout << "----------------------------------------\n\n";
+
+        // 끝나는지?
+        if (0 == std::strcmp(sendData.c_str(), "quit")) {
+            break;
+        }
+
+        // 문자열 보내기
+        if (SOCKET_ERROR == ::send(clientSocket, sendData.c_str(), dataSize, 0)) {
+            HandleSocketError();
+            return EXIT_FAILURE;
+        }
+
+        // 보냈으면 받기
+        // recv함수는 send함수와는 다르게 받은 데이터의 길이(수신한 바이트)를 반환함.
+        // 0 -> 연결이 종료됨, SOCKET_ERROR -> 에러
+        std::cout << "----------------------------------------\n\n";
+        std::cout << "수신 대기...\n\n";
+        int len = ::recv(clientSocket, recvData, RECV_SIZE, 0);
+        if (0 == len) {
+            std::cout << "연결 종료.\n";
+            break;
+        }
+        else if (SOCKET_ERROR == len) {
+            HandleSocketError();
+            break;
+        }
+        else if ('\0' != recvData[RECV_SIZE - 1]) {
+            std::cout << "recv 한도 초과\n";
+            break;
+        }
+
+        std::cout << "수신 바이트 수: " << len << "\n";
+        std::cout << "내용: " << recvData << "\n\n";
+        std::cout << "----------------------------------------\n\n";
+
+        // 다 받으면 다시 반복
     }
 
-    // 생성된 소켓 
+    // 소켓 연결의 종료를 알리는 함수, 소켓 뒤의 파라미터는 어떤 작업(SEND?, RECV?, BOTH?)을 중단할 것인지 설정
+    ::shutdown(clientSocket, SD_BOTH);
+
+    // 생성된 소켓 닫기
     if (SOCKET_ERROR == ::closesocket(socket)) {
         HandleSocketError();
         return EXIT_FAILURE;
