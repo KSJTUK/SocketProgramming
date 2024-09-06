@@ -89,36 +89,37 @@ std::pair<std::string, unsigned short> NetAddr(sockaddr_in6 address)
     return std::make_pair(ip, port);
 }
 
-// 데이터 송신 함수
-void Send(SOCKET socket, const char* data, size_t dataSize)
+// 데이터 수신 및 돌려주기 함수
+void RecvAndEcho(SOCKET clientSocket, std::pair<std::string, unsigned short> address)
 {
-    if (SOCKET_ERROR == ::send(socket, data, dataSize, 0)) {
-        HandleErrorQuit();
-    }
-}
+    auto [ip, port] = address;
+    std::cout << "[클라이언트 접속] IP: " << ip << ", PORT 번호: " << port << "\n\n";
 
-// 데이터 수신 함수
-void Recv(SOCKET socket)
-{
     char buffer[RECV_SIZE]{ };
 
     while (true) {
         std::memset(buffer, 0, RECV_SIZE);
 
-        int len = ::recv(socket, buffer, RECV_SIZE, 0);
+        int len = ::recv(clientSocket, buffer, RECV_SIZE, 0);
         if (len == 0) {
             EraseConsoleLine();
-            std::cout << "연결 종료\n"; 
-            ::shutdown(socket, SD_BOTH);
+            std::cout << "[클라이언트 연결 종료] IP: " << ip << ", PORT 번호: " << port << "\n\n";
+            ::shutdown(clientSocket, SD_BOTH);
             break;
         }
         else if (len < 0) {
-            HandleErrorQuit();
+            HandleErrorDisplay();
+            std::cout << "IP: " << ip << ", PORT 번호 : " << port << "\n\n";
+            break;
         }
 
         EraseConsoleLine();
 
-        std::cout << "[수신]: " << buffer << "\n";
+        std::cout << "[수신 " << len << "bytes]: " << buffer << "\n";
+
+        if (SOCKET_ERROR == ::send(clientSocket, buffer, (int)(strlen(buffer)), 0)) {
+            HandleErrorQuit();
+        }
     }
 }
 
@@ -161,6 +162,8 @@ void TCPServerIPv4()
         HandleErrorQuit();
     }
 
+    std::vector<std::thread> serverThreads{ };
+
     sockaddr_in clientAddress;
     int addressLength{ sizeof(sockaddr_in) };
     while (true) {
@@ -170,44 +173,12 @@ void TCPServerIPv4()
             HandleErrorDisplay();
             continue;
         }
+        
+        serverThreads.emplace_back(RecvAndEcho, clientSocket, NetAddr(clientAddress));
+    }
 
-        auto [ip, port] = NetAddr(clientAddress);
-        std::cout << "[클라이언트 접속] IP: " << ip << ", PORT 번호: " << port << "\n\n";
-
-        // 데이터 수신 쓰레드 생성
-        std::thread recvThread{ Recv, clientSocket };
-
-        std::string sendData{ };
-        // 데이터 송신 루프
-        while (true) {
-            sendData.clear();
-
-            // 보낼 문자열 입력 받기 및, 입력제한 조건 설정
-            std::cout << "[송신]: ";
-            std::cin >> sendData;
-
-            size_t dataSize = sendData.size();
-            if (SEND_SIZE <= dataSize) {
-                std::cout << "입력제한 1023자를 넘어섰습니다. 다시 입력해주세요.\n";
-                std::cin.clear();
-                std::cin.ignore(std::numeric_limits<int>::max(), '\n');
-                continue;
-            }
-
-            // 끝나는지?
-            if (0 == std::strcmp(sendData.c_str(), "quit")) {
-                ::shutdown(clientSocket, SD_BOTH);
-                break;
-            }
-
-            // 문자열 보내기
-            if (SOCKET_ERROR == ::send(clientSocket, sendData.c_str(), dataSize, 0)) {
-                HandleErrorQuit();
-            }
-        }
-
-        // 끝날때 까지 기다려주기
-        recvThread.join();
+    for (auto& thread : serverThreads) {
+        thread.join();
     }
 }
 
@@ -233,42 +204,23 @@ void TCPServerIPv6()
         HandleErrorQuit();
     }
 
+    std::vector<std::thread> serverThreads{ };
+
     sockaddr_in6 clientAddress;
     int clientAddressLen{ sizeof(sockaddr_in6) };
     while (true) {
-        std::memset(&clientAddress, 0, sizeof(sockaddr_in6));
+        std::memset(&clientAddress, 0, sizeof(sockaddr_in));
         SOCKET clientSocket = ::accept(listenSocket, reinterpret_cast<sockaddr*>(&clientAddress), &clientAddressLen);
         if (INVALID_SOCKET == clientSocket) {
-            HandleErrorQuit();
+            HandleErrorDisplay();
+            continue;
         }
 
-        auto [ip, port] = NetAddr(clientAddress);
-        std::cout << "[클라이언트 접속] IP: " << ip << ", PORT 번호: " << port << "\n\n";
+        serverThreads.emplace_back(RecvAndEcho, clientSocket, NetAddr(clientAddress));
+    }
 
-        std::thread recvThread{ Recv, clientSocket };
-
-        std::string sendData{ };
-        while (true) {
-            sendData.clear();
-
-            std::cout << "[송신]: ";
-            std::cin >> sendData;
-            size_t dataSize = sendData.size();
-            if (SEND_SIZE <= dataSize) {
-                std::cout << "입력제한 1023자를 넘어섰습니다. 다시 입력해주세요.\n";
-                std::cin.clear();
-                std::cin.ignore(std::numeric_limits<int>::max(), '\n');
-                continue;
-            }
-
-            // 끝나는지?
-            if (0 == std::strcmp(sendData.c_str(), "quit")) {
-                ::shutdown(clientSocket, SD_BOTH);
-                break;
-            }
-        }
-
-        recvThread.join();
+    for (auto& thread : serverThreads) {
+        thread.join();
     }
 }
 

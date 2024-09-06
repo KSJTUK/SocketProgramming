@@ -74,7 +74,7 @@ void Send(SOCKET socket, const char* data, size_t dataSize)
 }
 
 // 데이터 수신 함수
-void Recv(SOCKET socket)
+void RecvAndEcho(SOCKET socket)
 {
     char buffer[RECV_SIZE]{ };
 
@@ -140,7 +140,7 @@ void TCPClientIPv4()
     }
 
     // 데이터 수신 쓰레드 생성
-    std::thread recvThread{ Recv, socket };
+    std::thread recvThread{ RecvAndEcho, socket };
 
     std::string sendData{ };
     // 데이터 송신 루프
@@ -199,7 +199,7 @@ void TCPClientIPv6()
         HandleErrorQuit();
     }
 
-    std::thread recvThread{ Recv, socket };
+    std::thread recvThread{ RecvAndEcho, socket };
 
     std::string sendData{ };
     while (true) {
