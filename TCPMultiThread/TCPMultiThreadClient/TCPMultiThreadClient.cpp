@@ -1,5 +1,6 @@
 ﻿#include <iostream>
 #include <thread>
+#include <string>
 
 #define NOMINMAX
 #include <WinSock2.h>
@@ -48,7 +49,7 @@ void HandleErrorDisplay()
     );
 
     std::cout << "[소켓 에러 발생] 에러 코드: " << errorCode << "\n";
-    std::cout << "[내용]: " << errorMessage;
+    std::cout << "[내용]: " << reinterpret_cast<char*>(errorMessage);
 
     LocalFree(errorMessage);
 }
@@ -91,6 +92,8 @@ void Recv(SOCKET socket)
             HandleErrorQuit();
         }
 
+        EraseConsoleLine();
+         
         std::cout << "[수신]: " << buffer << "\n";
     }
 }
@@ -130,7 +133,6 @@ void TCPClientIPv4()
     }
     else if (-1 == ptonResult) {
         HandleErrorQuit();
-        ::exit(EXIT_FAILURE);
     }
 
     if (SOCKET_ERROR == ::connect(socket, reinterpret_cast<sockaddr*>(&address), sizeof(sockaddr_in))) {
@@ -143,6 +145,8 @@ void TCPClientIPv4()
     std::string sendData{ };
     // 데이터 송신 루프
     while (true) {
+        sendData.clear();
+
         // 보낼 문자열 입력 받기 및, 입력제한 조건 설정
         std::cout << "[송신]: ";
         std::cin >> sendData;
@@ -171,11 +175,68 @@ void TCPClientIPv4()
     recvThread.join();
 }
 
+void TCPClientIPv6()
+{
+    SOCKET socket = ::socket(AF_INET6, SOCK_STREAM, 0);
+    if (INVALID_SOCKET == socket) {
+        HandleErrorQuit();
+    }
+
+    sockaddr_in6 address;
+    std::memset(&address, 0, sizeof(sockaddr_in6));
+    address.sin6_family = AF_INET6;
+    address.sin6_port = ::htons(PORT);
+    int ptonResult = ::inet_pton(AF_INET6, "0:0:0:0:0:0:0:1", &address.sin6_addr);
+    if (0 == ptonResult) {
+        std::cout << "[오류]: IP 주소 형식이 지정한 IP 버전과 맞지 않음\n";
+        ::exit(EXIT_FAILURE);
+    } 
+    else if (-1 == ptonResult) {
+        HandleErrorQuit();
+    }
+
+    if (SOCKET_ERROR == ::connect(socket, reinterpret_cast<sockaddr*>(&address), sizeof(sockaddr_in6))) {
+        HandleErrorQuit();
+    }
+
+    std::thread recvThread{ Recv, socket };
+
+    std::string sendData{ };
+    while (true) {
+        sendData.clear();
+
+        // 보낼 문자열 입력 받기 및, 입력제한 조건 설정
+        std::cout << "[송신]: ";
+        std::cin >> sendData;
+
+        size_t dataSize = sendData.size();
+        if (SEND_SIZE <= dataSize) {
+            std::cout << "입력제한 1023자를 넘어섰습니다. 다시 입력해주세요.\n";
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<int>::max(), '\n');
+            continue;
+        }
+
+        // 끝나는지?
+        if (0 == std::strcmp(sendData.c_str(), "quit")) {
+            ::shutdown(socket, SD_BOTH);
+            break;
+        }
+
+        // 문자열 보내기
+        if (SOCKET_ERROR == ::send(socket, sendData.c_str(), dataSize, 0)) {
+            HandleErrorQuit();
+        }
+    }
+
+    recvThread.join();
+}
+
 int main()
 {
     WinSockStart();
 
-    TCPClientIPv4();
+    TCPClientIPv6();
 
     WinSockClean();
 
