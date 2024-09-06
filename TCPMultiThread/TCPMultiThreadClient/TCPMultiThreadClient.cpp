@@ -11,6 +11,25 @@ constexpr unsigned short PORT = 7777;
 constexpr int RECV_SIZE = 1024;
 constexpr int SEND_SIZE = 1024;
 
+// 콘솔 제어 함수들
+// 콘솔 너비를 반환하는 함수
+int GetTerminalWidth(void)
+{
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    int columns;
+
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+    columns = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+
+    return columns;
+}
+
+// 캐리지 리턴을 이용해서 한라인만 공백으로 채우는 함수
+void EraseConsoleLine()
+{
+    std::cout << "\r" << std::string(GetTerminalWidth(), ' ') << "\r";
+}
+
 // 소켓 함수관련 에러 발생시 사용할 함수들
 // 에러 메시지 출력
 void HandleErrorDisplay()
@@ -63,7 +82,8 @@ void Recv(SOCKET socket)
 
         int len = ::recv(socket, buffer, RECV_SIZE, 0);
         if (len == 0) {
-            std::cout << "연결 종료\n";
+            EraseConsoleLine();
+            std::cout << "[연결 종료]\n";
             ::shutdown(socket, SD_BOTH);
             break;
         }
@@ -71,9 +91,7 @@ void Recv(SOCKET socket)
             HandleErrorQuit();
         }
 
-        std::cout << "----------------------------------------\n";
-        std::cout << "수신: " << buffer << "\n";
-        std::cout << "----------------------------------------\n\n";
+        std::cout << "[수신]: " << buffer << "\n";
     }
 }
 
@@ -107,7 +125,7 @@ void TCPClientIPv4()
     address.sin_port = ::htons(PORT);
     int ptonResult = ::inet_pton(AF_INET, "127.0.0.1", &address.sin_addr.s_addr); // ip 주소
     if (0 == ptonResult) {
-        std::cout << "IP 주소 형식이 지정한 IP 버전과 맞지 않음\n";
+        std::cout << "[오류]: IP 주소 형식이 지정한 IP 버전과 맞지 않음\n";
         ::exit(EXIT_FAILURE);
     }
     else if (-1 == ptonResult) {
@@ -126,7 +144,7 @@ void TCPClientIPv4()
     // 데이터 송신 루프
     while (true) {
         // 보낼 문자열 입력 받기 및, 입력제한 조건 설정
-        std::cout << "보낼 문자열을 입력해주세요 (끝내려면 quit 입력, 입력 제한 1023자): ";
+        std::cout << "[송신]: ";
         std::cin >> sendData;
 
         size_t dataSize = sendData.size();
@@ -147,8 +165,6 @@ void TCPClientIPv4()
         if (SOCKET_ERROR == ::send(socket, sendData.c_str(), dataSize, 0)) {
             HandleErrorQuit();
         }
-        std::cout << "보내기 완료.\n\n";
-        std::cout << "----------------------------------------\n\n";
     }
 
     // 끝날때 까지 기다려주기
