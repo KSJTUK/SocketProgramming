@@ -2,7 +2,7 @@
 //
 
 #include "framework.h"
-#include "TCPClientWithGUI.h"
+#include "resource.h"
 
 #define MAX_LOADSTRING 100
 

@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.35201.131
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TCPServerWithGUI", "TCPServerWithGUI\TCPServerWithGUI.vcxproj", "{CD4182DB-8805-47DB-875A-02A4552A18B4}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TCPServerWithGUI", "TCPServerWithGUI\TCPServerWithGUI.vcxproj", "{FDA94195-DA85-4DFA-BFF1-3348431A3CD4}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TCPClientWithGUI", "TCPClientWithGUI\TCPClientWithGUI.vcxproj", "{19A953CA-1BC3-4907-9786-66E166BF49CE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,14 +15,22 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{CD4182DB-8805-47DB-875A-02A4552A18B4}.Debug|x64.ActiveCfg = Debug|x64
-		{CD4182DB-8805-47DB-875A-02A4552A18B4}.Debug|x64.Build.0 = Debug|x64
-		{CD4182DB-8805-47DB-875A-02A4552A18B4}.Debug|x86.ActiveCfg = Debug|Win32
-		{CD4182DB-8805-47DB-875A-02A4552A18B4}.Debug|x86.Build.0 = Debug|Win32
-		{CD4182DB-8805-47DB-875A-02A4552A18B4}.Release|x64.ActiveCfg = Release|x64
-		{CD4182DB-8805-47DB-875A-02A4552A18B4}.Release|x64.Build.0 = Release|x64
-		{CD4182DB-8805-47DB-875A-02A4552A18B4}.Release|x86.ActiveCfg = Release|Win32
-		{CD4182DB-8805-47DB-875A-02A4552A18B4}.Release|x86.Build.0 = Release|Win32
+		{FDA94195-DA85-4DFA-BFF1-3348431A3CD4}.Debug|x64.ActiveCfg = Debug|x64
+		{FDA94195-DA85-4DFA-BFF1-3348431A3CD4}.Debug|x64.Build.0 = Debug|x64
+		{FDA94195-DA85-4DFA-BFF1-3348431A3CD4}.Debug|x86.ActiveCfg = Debug|Win32
+		{FDA94195-DA85-4DFA-BFF1-3348431A3CD4}.Debug|x86.Build.0 = Debug|Win32
+		{FDA94195-DA85-4DFA-BFF1-3348431A3CD4}.Release|x64.ActiveCfg = Release|x64
+		{FDA94195-DA85-4DFA-BFF1-3348431A3CD4}.Release|x64.Build.0 = Release|x64
+		{FDA94195-DA85-4DFA-BFF1-3348431A3CD4}.Release|x86.ActiveCfg = Release|Win32
+		{FDA94195-DA85-4DFA-BFF1-3348431A3CD4}.Release|x86.Build.0 = Release|Win32
+		{19A953CA-1BC3-4907-9786-66E166BF49CE}.Debug|x64.ActiveCfg = Debug|x64
+		{19A953CA-1BC3-4907-9786-66E166BF49CE}.Debug|x64.Build.0 = Debug|x64
+		{19A953CA-1BC3-4907-9786-66E166BF49CE}.Debug|x86.ActiveCfg = Debug|Win32
+		{19A953CA-1BC3-4907-9786-66E166BF49CE}.Debug|x86.Build.0 = Debug|Win32
+		{19A953CA-1BC3-4907-9786-66E166BF49CE}.Release|x64.ActiveCfg = Release|x64
+		{19A953CA-1BC3-4907-9786-66E166BF49CE}.Release|x64.Build.0 = Release|x64
+		{19A953CA-1BC3-4907-9786-66E166BF49CE}.Release|x86.ActiveCfg = Release|Win32
+		{19A953CA-1BC3-4907-9786-66E166BF49CE}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
