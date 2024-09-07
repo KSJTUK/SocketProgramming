@@ -43,6 +43,12 @@ void UDPServerIPv4()
         HandleErrorQuit();
     }
 
+    // 브로드 캐스트 활성화 부분 (소켓옵션, 비활성화 -> braodCastEnable = 0;)
+    bool broadCastEnable = 1;
+    if (SOCKET_ERROR == ::setsockopt(udpSocket, SOL_SOCKET, SO_BROADCAST, reinterpret_cast<const char*>(&broadCastEnable), 1)) {
+        HandleErrorQuit();
+    }
+
     sockaddr_in serverAddress;
     std::memset(&serverAddress, 0, sizeof(serverAddress));
     serverAddress.sin_family = AF_INET;
