@@ -20,15 +20,21 @@ DrawBuffer::~DrawBuffer()
 	ReleaseDC(mWindowInfo.windowHandle, mMainFrameDC);
 }
 
+// Backbuffer 리턴
 HDC DrawBuffer::GetMemDC() const
 {
 	return mMemDC;
 }
 
-void DrawBuffer::Render()
+void DrawBuffer::CleanupBuffer()
 {
 	auto [left, top, right, bottom] = mWindowInfo.windowRect;
 	FillRect(mMemDC, &mWindowInfo.windowRect, (HBRUSH)GetStockObject(BLACK_BRUSH));
+}
 
+// 백버퍼 픽셀 초기화
+void DrawBuffer::CopyBufferMemToMain()
+{
+	auto [left, top, right, bottom] = mWindowInfo.windowRect;
 	BitBlt(mMainFrameDC, 0, 0, right, bottom, mMemDC, 0, 0, SRCCOPY);
 }

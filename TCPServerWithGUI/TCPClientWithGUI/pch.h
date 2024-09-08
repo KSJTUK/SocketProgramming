@@ -20,7 +20,15 @@
 #include <string>
 #include <memory>
 
+#include <list>
+#include <vector>
+
 struct WindowInfo {
 	HWND windowHandle;
 	RECT windowRect;
+};
+
+struct Position {
+	int x;
+	int y;
 };

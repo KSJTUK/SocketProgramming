@@ -15,7 +15,8 @@ public:
 public:
 	HDC GetMemDC() const;
 
-	void Render();
+	void CleanupBuffer();
+	void CopyBufferMemToMain();
 
 private:
 	WindowInfo mWindowInfo{ };

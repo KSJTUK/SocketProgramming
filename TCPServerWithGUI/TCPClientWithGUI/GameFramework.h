@@ -17,6 +17,9 @@ public:
 	bool Init(HINSTANCE instanceHandle);
 	void Destroy();
 
+	// 그리기에 필요한 객체들을 생성하는 함수
+	void CreateObjects();
+
 	// 윈도우 메세지 처리 함수 
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
@@ -36,4 +39,7 @@ private:
 	std::wstring	mWindowClassName{ L"GUI 클라이언트" };
 
 	std::shared_ptr<class DrawBuffer> mDrawBuffer{ };
+
+	// draw test
+	std::list<std::unique_ptr<class Shape>> mDrawTestShapes{ };
 };

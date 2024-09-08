@@ -2,6 +2,7 @@
 #include "GameFramework.h"
 #include "Resource.h"
 #include "DrawBuffer.h"
+#include "Shape.h"
 
 /* ----------------------------------------
 * 
@@ -20,7 +21,7 @@ bool GameFramework::Init(HINSTANCE instanceHandle)
 	RegisterWindow();
 	CreateMyWindow();
 
-    mDrawBuffer = std::make_shared<DrawBuffer>(mWindowInfo);
+    CreateObjects();
 
 	return false;
 }
@@ -28,6 +29,18 @@ bool GameFramework::Init(HINSTANCE instanceHandle)
 void GameFramework::Destroy()
 {
     // TODO
+}
+
+// 그리기에 필요한 객체들을 생성하는 함수
+void GameFramework::CreateObjects()
+{
+    mDrawBuffer = std::make_shared<DrawBuffer>(mWindowInfo);
+
+    mDrawTestShapes.emplace_back(std::make_unique<Square>(0, 0, 50, 50, mDrawBuffer ));
+    mDrawTestShapes.emplace_back(std::make_unique<PointShape>(100, 100, mDrawBuffer));
+    mDrawTestShapes.emplace_back(std::make_unique<PointShape>(200, 200, mDrawBuffer));
+    mDrawTestShapes.emplace_back(std::make_unique<PointShape>(300, 300, mDrawBuffer));
+    mDrawTestShapes.emplace_back(std::make_unique<PointShape>(500, 500, mDrawBuffer));
 }
 
 LRESULT GameFramework::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -49,7 +62,14 @@ LRESULT GameFramework::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 void GameFramework::FrameAdvance()
 {
-    mDrawBuffer->Render();
+    mDrawBuffer->CleanupBuffer();
+
+    // Rendering
+    for (auto& shape : mDrawTestShapes) {
+        shape->Render();
+    }
+
+    mDrawBuffer->CopyBufferMemToMain();
 }
 
 void GameFramework::CreateMyWindow()
