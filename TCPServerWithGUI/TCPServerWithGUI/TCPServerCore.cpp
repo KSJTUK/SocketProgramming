@@ -27,8 +27,11 @@ void TCPServerCore::StartAccept()
 
         mClientServiceThreads.push_back(std::thread{ [=]()
             {
-                short id = addedId;
+                byte id = addedId;
                 Client& client = mClients[id];
+                PacketPlayerConnect connectedPakcet{ sizeof(PacketPlayerConnect), PACKET_PLAYER_CONNECT, id };
+
+                client.Send(&connectedPakcet);
 
                 client.Recv();
             
@@ -61,9 +64,9 @@ std::unordered_map<unsigned short, Client>& TCPServerCore::GetClients()
     return mClients;
 }
 
-short TCPServerCore::AddClient(SOCKET clientSocket)
+byte TCPServerCore::AddClient(SOCKET clientSocket)
 {
-    for (unsigned short id = 0; id < 64; ++id) {
+    for (byte id = 0; id < 64; ++id) {
         if (not mClients.contains(id)) {
             Address::NetHostInfo hostInfo = Address::GetHostInfo(clientSocket);
 
@@ -73,7 +76,7 @@ short TCPServerCore::AddClient(SOCKET clientSocket)
         }
     }
 
-    return -1;
+    return 0xFF;
 }
 
 void TCPServerCore::ExitClient(unsigned short id)

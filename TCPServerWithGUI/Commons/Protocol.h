@@ -13,16 +13,38 @@ using byte = unsigned char;
 
 enum {
 	PACKET_POSITION2D = 0,
+	PACKET_PLAYER_CONNECT,
+	PACKET_PLAYER_JOIN,
+	PACKET_PLAYER_EXIT,
+	PACKET_MOVE2D,
 };
 
 #pragma pack(push, 1)
 struct PacketBase {
 	byte size;
 	byte type;
+	byte senderId;
+};
+
+struct PacketPlayerConnect : public PacketBase {
+};
+
+struct PacketPlayerJoin : public PacketBase { 
+	float x;
+	float y;
+};
+
+struct PacketPlayerExit : public PacketBase {
 };
 
 struct PacketPosition2D : public PacketBase {
-	int x;
-	int y;
+	float x;
+	float y;
+};
+
+struct PacketMove2D : public PacketBase {
+	char x;
+	char y;
+	float velocity;
 };
 #pragma pack(pop)

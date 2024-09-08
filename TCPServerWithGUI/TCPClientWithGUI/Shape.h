@@ -12,11 +12,13 @@ class DrawBuffer;
 class Shape abstract {
 public:
 	Shape();
-	Shape(int x, int y);
+	Shape(float x, float y);
 	Shape(Position position);
 	virtual ~Shape();
 
 public:
+	void SetPosition(float x, float y);
+	void SetPosition(Position position);
 	Position GetPosition() const { return mPosition; }
 	virtual void Render() abstract;
 
@@ -34,7 +36,7 @@ private:
 // PointShape Å¬·¡½º
 class PointShape : public Shape {
 public:
-	explicit PointShape(int x, int y, std::shared_ptr<DrawBuffer> drawBuffer);
+	explicit PointShape(float x, float y, std::shared_ptr<DrawBuffer> drawBuffer);
 	explicit PointShape(Position position, std::shared_ptr<DrawBuffer> drawBuffer);
 
 public:
@@ -56,7 +58,7 @@ class Square : public Shape {
 public:
 	explicit Square(unsigned int width, unsigned int height, std::shared_ptr<DrawBuffer> drawBuffer);
 	explicit Square(Position position, unsigned int width, unsigned int height, std::shared_ptr<DrawBuffer> drawBuffer);
-	explicit Square(int x, int y, unsigned int width, unsigned int height, std::shared_ptr<DrawBuffer> drawBuffer);
+	explicit Square(float x, float y, unsigned int width, unsigned int height, std::shared_ptr<DrawBuffer> drawBuffer);
 	virtual ~Square();
 
 public:

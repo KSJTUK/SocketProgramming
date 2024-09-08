@@ -10,7 +10,17 @@
 Shape::Shape() = default;
 Shape::~Shape() = default;
 
-Shape::Shape(int x, int y)
+void Shape::SetPosition(float x, float y)
+{
+	mPosition = { x, y };
+}
+
+void Shape::SetPosition(Position position)
+{
+	mPosition = position;
+}
+
+Shape::Shape(float x, float y)
 	: mPosition{ x, y }
 {
 }
@@ -26,7 +36,7 @@ Shape::Shape(Position position)
 *
   ---------------------------------------- */
 
-PointShape::PointShape(int x, int y, std::shared_ptr<DrawBuffer> drawBuffer)
+PointShape::PointShape(float x, float y, std::shared_ptr<DrawBuffer> drawBuffer)
 	: Shape{ x, y },
 	mDrawBuffer{ drawBuffer }
 {
@@ -41,7 +51,7 @@ PointShape::PointShape(Position position, std::shared_ptr<DrawBuffer> drawBuffer
 void PointShape::Render()
 {
 	auto [x, y] = GetPosition();
-	SetPixel(mDrawBuffer->GetMemDC(), x, y, RGB(255, 255, 255));
+	SetPixel(mDrawBuffer->GetMemDC(), (int)x, (int)y, RGB(255, 255, 255));
 }
 
 /* ----------------------------------------
@@ -66,7 +76,7 @@ Square::Square(Position position, unsigned int width, unsigned int height, std::
 {
 }
 
-Square::Square(int x, int y, unsigned int width, unsigned int height, std::shared_ptr<DrawBuffer> drawBuffer)
+Square::Square(float x, float y, unsigned int width, unsigned int height, std::shared_ptr<DrawBuffer> drawBuffer)
 	: Shape{ x, y },
 	mWidth{ width },
 	mHeight{ height },
@@ -81,10 +91,10 @@ void Square::Render()
 	auto [x, y] = GetPosition();
 	Rectangle(
 		mDrawBuffer->GetMemDC(),
-		x - (mWidth / 2),   /* left   */
-		y - (mHeight / 2),  /* top    */
-		x + (mWidth / 2),   /* right  */
-		y + (mHeight / 2)   /* bottom */
+		(int)x - (mWidth / 2),   /* left   */
+		(int)y - (mHeight / 2),  /* top    */
+		(int)x + (mWidth / 2),   /* right  */
+		(int)y + (mHeight / 2)   /* bottom */
 	);
 }
 

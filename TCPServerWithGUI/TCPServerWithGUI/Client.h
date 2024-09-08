@@ -15,6 +15,7 @@ public:
 	void Recv();
 
 private:
+	void BroadCasePacket(byte senderId, PacketBase* packet);
 	void ProcessPacket(char* packet);
 
 private:

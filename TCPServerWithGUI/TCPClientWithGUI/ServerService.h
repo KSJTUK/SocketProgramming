@@ -8,6 +8,8 @@ public:
 	~ServerService();
 
 public:
+	byte GetId() const { return mId; }
+
 	bool ConnectToServer();
 
 	void Send(PacketBase* packet);
@@ -20,6 +22,7 @@ private:
 private:
 	SOCKET mSocket{ INVALID_SOCKET };
 	std::thread mRecvThread{ };
+	byte mId{ 0xFF };
 	char mRecvBuffer[RECV_SIZE]{ };
 };
 

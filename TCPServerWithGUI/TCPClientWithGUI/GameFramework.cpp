@@ -1,9 +1,12 @@
 #include "pch.h"
 #include "GameFramework.h"
 #include "Resource.h"
+#include "ServerService.h"
+
+#include "Input.h"
 #include "DrawBuffer.h"
 #include "Shape.h"
-#include "ServerService.h"
+#include "Player.h"
 
 /* ----------------------------------------
 * 
@@ -12,6 +15,7 @@
   ---------------------------------------- */
 
 GameFramework::GameFramework() = default;
+
 GameFramework::~GameFramework() = default;
 
 bool GameFramework::Init(HINSTANCE instanceHandle)
@@ -27,6 +31,15 @@ bool GameFramework::Init(HINSTANCE instanceHandle)
 
     mServerService->CreateRecvThread();
 
+    // 
+    while (mServerService->GetId() == 0xFF) {
+
+    }
+
+    auto [playerX, playerY] = mPlayer->GetPosition();
+    PacketPlayerJoin joinedPacket{ sizeof(PacketPlayerJoin), PACKET_PLAYER_JOIN, mServerService->GetId(), playerX, playerY };
+    mServerService->Send(&joinedPacket);
+
 	return true;
 }
 
@@ -41,14 +54,41 @@ void GameFramework::Destroy()
 // 그리기에 필요한 객체들을 생성하는 함수
 void GameFramework::CreateObjects()
 {
+    mKeyInput = std::make_shared<KeyInput>();
     mServerService = std::make_unique<ServerService>();
-
     mDrawBuffer = std::make_shared<DrawBuffer>(mWindowInfo);
+
+    mPlayer = std::make_unique<Player>();
 }
 
 void GameFramework::AddShape(Shape* shape)
 {
     mDrawTestShapes.emplace_back(shape);
+}
+
+void GameFramework::JoinOtherPlayer(byte id, Player* player)
+{
+    mOtherPlayers.try_emplace(id, player);
+}
+
+void GameFramework::UpdateJoinedPlayer(byte id, Direction2D dir, float velocity)
+{
+    if (mOtherPlayers.contains(id)) {
+        mOtherPlayers[id]->SetDirection(dir);
+        mOtherPlayers[id]->SetValocity(velocity);
+    }
+}
+
+void GameFramework::ExitPlayer(byte id)
+{
+    if (mOtherPlayers.contains(id)) {
+        mOtherPlayers.erase(id);
+    }
+}
+
+std::shared_ptr<class KeyInput> GameFramework::GetKeyInput() const
+{
+    return mKeyInput;
 }
 
 std::shared_ptr<class DrawBuffer> GameFramework::GetDrawBuffer() const
@@ -60,12 +100,19 @@ void GameFramework::OnProcessingMouse(HWND hWnd, UINT message, WPARAM wParam, LP
 {
     switch (message) {
     case WM_LBUTTONUP:
-        PacketPosition2D* positionPacket = new PacketPosition2D;
-        positionPacket->size = sizeof(PacketPosition2D);
-        positionPacket->type = PACKET_POSITION2D;
-        positionPacket->x = LOWORD(lParam);
-        positionPacket->y = HIWORD(lParam);
-        mServerService->Send(positionPacket);
+        ReleaseCapture();
+        {
+            PacketPosition2D* positionPacket = new PacketPosition2D;
+            positionPacket->size = sizeof(PacketPosition2D);
+            positionPacket->type = PACKET_POSITION2D;
+            positionPacket->x = LOWORD(lParam);
+            positionPacket->y = HIWORD(lParam);
+            mServerService->Send(positionPacket);
+        }
+        break;
+
+    case WM_LBUTTONDOWN:
+        SetCapture(mWindowInfo.windowHandle);
         break;
     }
 }
@@ -104,12 +151,28 @@ LRESULT GameFramework::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 void GameFramework::FrameAdvance()
 {
+    mKeyInput->Input();
     mDrawBuffer->CleanupBuffer();
+
+    mPlayer->Update();
+    auto [dirX, dirY] = mPlayer->GetDirection();
+    PacketMove2D playerPacket{ sizeof(PacketMove2D), PACKET_MOVE2D, mServerService->GetId(), dirX, dirY, mPlayer->GetVelocity()};
+    mServerService->Send(&playerPacket);
+
+    for (auto& [id, otherPlayer] : mOtherPlayers) {
+        otherPlayer->Update();
+    }
 
     // Rendering
     for (auto& shape : mDrawTestShapes) {
         shape->Render();
     }
+
+    for (auto& [id, otherPlayer] : mOtherPlayers) {
+        otherPlayer->Render();
+    }
+
+    mPlayer->Render();
 
     mDrawBuffer->CopyBufferMemToMain();
 }

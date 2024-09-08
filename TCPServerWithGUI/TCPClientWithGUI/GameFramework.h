@@ -23,7 +23,11 @@ public:
 	// 그리기에 필요한 객체들을 생성하는 함수
 	void CreateObjects();
 	void AddShape(class Shape* shape);
-
+	void JoinOtherPlayer(byte id, class Player* player);
+	void UpdateJoinedPlayer(byte id, Direction2D dir, float velocity);
+	void ExitPlayer(byte id);
+	
+	std::shared_ptr<class KeyInput> GetKeyInput() const;
 	std::shared_ptr<class DrawBuffer> GetDrawBuffer() const;
 
 	void OnProcessingMouse(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -44,9 +48,17 @@ private:
 	std::wstring	mWindowName{ L"GUI 클라이언트" };
 	std::wstring	mWindowClassName{ L"GUI 클라이언트" };
 
+	// 렌더링 처리
 	std::shared_ptr<class DrawBuffer> mDrawBuffer{ };
+
+	// 키입력 처리
+	std::shared_ptr<class KeyInput> mKeyInput{ };
+
+	// 서버 데이터 송수신 처리
 	std::unique_ptr<class ServerService> mServerService{ };
 
 	// draw test
+	std::unique_ptr<class Player> mPlayer{ };
+	std::unordered_map<byte, std::unique_ptr<class Player>> mOtherPlayers{ };
 	std::list<std::unique_ptr<class Shape>> mDrawTestShapes{ };
 };

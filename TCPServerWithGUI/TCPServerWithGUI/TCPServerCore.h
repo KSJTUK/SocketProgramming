@@ -13,7 +13,7 @@ public:
 
 	std::unordered_map<unsigned short, Client>& GetClients();
 
-	short AddClient(SOCKET clientSocket);
+	byte AddClient(SOCKET clientSocket);
 	void ExitClient(unsigned short id);
 
 private:

@@ -44,6 +44,16 @@ void Recv(SOCKET socket)
         }
         break;
 
+        case PACKET_PLAYER_JOIN:
+        {
+            PacketPlayerJoin* packet = reinterpret_cast<PacketPlayerJoin*>(buffer);
+            {
+                std::lock_guard ioLockGuard{ gIOLock };
+                std::cout << "[수신] PLAYER JOIN Id: " << packet->senderId << "\n";
+            }
+        }
+        break;
+
         default:
             break;
         };

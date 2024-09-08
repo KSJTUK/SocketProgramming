@@ -19,8 +19,9 @@
 #include <cstdlib>
 #include <string>
 #include <memory>
-
 #include <list>
+#include <unordered_map>
+
 #include <vector>
 #include <thread>
 #include <mutex>
@@ -35,8 +36,13 @@ struct WindowInfo {
 };
 
 struct Position {
-	int x;
-	int y;
+	float x;
+	float y;
+};
+
+struct Direction2D {
+	char x;
+	char y;
 };
 
 extern class GameFramework gGameFramework;
