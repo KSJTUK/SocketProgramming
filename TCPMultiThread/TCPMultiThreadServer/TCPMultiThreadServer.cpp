@@ -228,7 +228,7 @@ int main()
 {
     WinSockStart();
 
-    TCPServerIPv6();
+    TCPServerIPv4();
 
     WinSockClean();
 

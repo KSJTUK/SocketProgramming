@@ -28,7 +28,6 @@ HDC DrawBuffer::GetMemDC() const
 
 void DrawBuffer::CleanupBuffer()
 {
-	auto [left, top, right, bottom] = mWindowInfo.windowRect;
 	FillRect(mMemDC, &mWindowInfo.windowRect, (HBRUSH)GetStockObject(BLACK_BRUSH));
 }
 

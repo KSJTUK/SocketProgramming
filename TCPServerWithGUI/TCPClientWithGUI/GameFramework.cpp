@@ -35,8 +35,6 @@ void GameFramework::Destroy()
 void GameFramework::CreateObjects()
 {
     mDrawBuffer = std::make_shared<DrawBuffer>(mWindowInfo);
-
-    mDrawTestShapes.emplace_back(std::make_unique<Square>(0, 0, 50, 50, mDrawBuffer ));
     for (int i = 0; i < 1000; ++i) {
         int x = Random::GetUniformRandom<int>(0, 1000);
         int y = Random::GetUniformRandom<int>(0, 800);

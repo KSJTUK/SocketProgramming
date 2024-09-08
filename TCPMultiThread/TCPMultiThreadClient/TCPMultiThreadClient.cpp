@@ -236,7 +236,7 @@ int main()
 {
     WinSockStart();
 
-    TCPClientIPv6();
+    TCPClientIPv4();
 
     WinSockClean();
 
