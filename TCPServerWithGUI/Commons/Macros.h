@@ -37,14 +37,10 @@ inline void* GetErrorMessage()
 	*crash = 0xFFFFFFFF;											\
 }
 
-#ifdef DEBUG || _DEBUG
-#define ASSERT_CRASH(expr, cause)	assert(expr)
-#else
 #define ASSERT_CRASH(expr, cause)									\
 {																	\
 	if (not (expr)) {												\
 		Crash(cause);												\
 	}																\
 }																
-#endif
 

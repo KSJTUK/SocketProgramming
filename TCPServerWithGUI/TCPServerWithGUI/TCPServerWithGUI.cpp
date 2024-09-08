@@ -3,9 +3,7 @@
 
 int main()
 {    
-	TCPServerCore core;
+	gServerCore.Init();
 
-	core.Init();
-
-	core.Join();
+	gServerCore.Join();
 }

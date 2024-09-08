@@ -1,13 +1,14 @@
 #include "pch.h"
 #include "TCPServerCore.h"
 #include "Listener.h"
+#include "Client.h"
 
 TCPServerCore::TCPServerCore() = default;
 TCPServerCore::~TCPServerCore() = default;
 
 void TCPServerCore::CreateCoreObjects()
 {
-	mListener = std::make_unique<Listener>(SERVER_IP, SERVER_PORT);
+    mListener = std::make_unique<Listener>(SERVER_IP, SERVER_PORT);
 }
 
 void TCPServerCore::StartAccept()
@@ -18,15 +19,21 @@ void TCPServerCore::StartAccept()
 			continue;
 		}
 
-		mClientServiceThreads.push_back(std::thread{[=]()
-			{
-			    auto [ip, port] = Address::GetHostInfo(clientSocket);
-	            std::cout << "[클라이언트 접속] IP: " << ip << " | PORT: " << port << "\n";
+        if (mClients.size() >= 64) {
+            continue;
+        }
 
-                RecvAndEcho(clientSocket);
+        short addedId = AddClient(clientSocket);
 
-                std::cout << "[클라이언트 연결 종료] IP: " << ip << " | PORT: " << port << "\n";
-			}
+        mClientServiceThreads.push_back(std::thread{ [=]()
+            {
+                short id = addedId;
+                Client& client = mClients[id];
+
+                client.Recv();
+            
+                ExitClient(id);
+            }
 		});
 	}
 }
@@ -49,27 +56,31 @@ void TCPServerCore::Join()
     ::WSACleanup();
 }
 
-void TCPServerCore::RecvAndEcho(SOCKET clientSocket)
+std::unordered_map<unsigned short, Client>& TCPServerCore::GetClients()
 {
-    char buffer[1024]{ };
+    return mClients;
+}
 
-    while (true) {
-        std::memset(buffer, 0, 1024);
+short TCPServerCore::AddClient(SOCKET clientSocket)
+{
+    for (unsigned short id = 0; id < 64; ++id) {
+        if (not mClients.contains(id)) {
+            Address::NetHostInfo hostInfo = Address::GetHostInfo(clientSocket);
 
-        int len = ::recv(clientSocket, buffer, 1024, 0);
-        if (len == 0) {
-            ::shutdown(clientSocket, SD_BOTH);
-            break;
+            mClients.emplace(id, Client{ id, clientSocket, hostInfo });
+            std::cout << "[클라이언트 접속] IP: " << hostInfo.ip << " | PORT: " << hostInfo.port << "\n";
+            return id;
         }
-        else if (len < 0) {
-            break;
-        }
+    }
 
-        std::cout << "[수신 " << len << "bytes]: " << buffer << "\n";
+    return -1;
+}
 
-        if (SOCKET_ERROR == ::send(clientSocket, buffer, (int)(strlen(buffer)), 0)) {
-            ::shutdown(clientSocket, SD_BOTH);
-            break;
-        }
+void TCPServerCore::ExitClient(unsigned short id)
+{
+    if (mClients.contains(id)) {
+        auto& [ip, port] = mClients[id].GetHostInfo();
+        std::cout << "[클라이언트 연결 종료] IP: " << ip << " | PORT: " << port << "\n";
+        mClients.erase(id);
     }
 }

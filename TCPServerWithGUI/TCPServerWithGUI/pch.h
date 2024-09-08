@@ -13,10 +13,14 @@
 #include <thread>
 #include <mutex>
 #include <atomic>
+#include <unordered_map>
 
+// Commons
 #include "Macros.h"
 #include "Random.h"
 #include "Protocol.h"
+
+#include "TCPServerCore.h"
 
 namespace Address {
 	struct NetHostInfo {
@@ -39,3 +43,5 @@ namespace Address {
 		return hostInfo;
 	}
 }
+
+extern TCPServerCore gServerCore;
