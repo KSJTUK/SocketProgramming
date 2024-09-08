@@ -23,6 +23,8 @@
 #include <list>
 #include <vector>
 
+#include "Random.h"
+
 struct WindowInfo {
 	HWND windowHandle;
 	RECT windowRect;

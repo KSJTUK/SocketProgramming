@@ -37,10 +37,11 @@ void GameFramework::CreateObjects()
     mDrawBuffer = std::make_shared<DrawBuffer>(mWindowInfo);
 
     mDrawTestShapes.emplace_back(std::make_unique<Square>(0, 0, 50, 50, mDrawBuffer ));
-    mDrawTestShapes.emplace_back(std::make_unique<PointShape>(100, 100, mDrawBuffer));
-    mDrawTestShapes.emplace_back(std::make_unique<PointShape>(200, 200, mDrawBuffer));
-    mDrawTestShapes.emplace_back(std::make_unique<PointShape>(300, 300, mDrawBuffer));
-    mDrawTestShapes.emplace_back(std::make_unique<PointShape>(500, 500, mDrawBuffer));
+    for (int i = 0; i < 1000; ++i) {
+        int x = Random::GetUniformRandom<int>(0, 1000);
+        int y = Random::GetUniformRandom<int>(0, 800);
+        mDrawTestShapes.emplace_back(std::make_unique<PointShape>(x, y, mDrawBuffer));
+    }
 }
 
 LRESULT GameFramework::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
