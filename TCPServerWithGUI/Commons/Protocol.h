@@ -6,7 +6,7 @@
 *
 ----------------------------------*/
 
-inline constexpr const char* SERVER_IP = "127.0.0.1";
+inline constexpr const char* SERVER_IP = "183.101.111.33";
 inline constexpr unsigned short SERVER_PORT = 7777;
 
 using byte = unsigned char;

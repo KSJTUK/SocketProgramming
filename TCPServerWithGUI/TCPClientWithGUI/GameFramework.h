@@ -9,6 +9,9 @@
   ---------------------------------------- */
 
 class GameFramework {
+	// 윈도우 메세지 처리 함수 
+	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
 public:
 	GameFramework();
 	~GameFramework();
@@ -19,9 +22,12 @@ public:
 
 	// 그리기에 필요한 객체들을 생성하는 함수
 	void CreateObjects();
+	void AddShape(class Shape* shape);
 
-	// 윈도우 메세지 처리 함수 
-	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	std::shared_ptr<class DrawBuffer> GetDrawBuffer() const;
+
+	void OnProcessingMouse(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	void OnProcessingKeyboard(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 	void FrameAdvance();
 
@@ -39,6 +45,7 @@ private:
 	std::wstring	mWindowClassName{ L"GUI 클라이언트" };
 
 	std::shared_ptr<class DrawBuffer> mDrawBuffer{ };
+	std::unique_ptr<class ServerService> mServerService{ };
 
 	// draw test
 	std::list<std::unique_ptr<class Shape>> mDrawTestShapes{ };

@@ -22,7 +22,11 @@
 
 #include <list>
 #include <vector>
+#include <thread>
+#include <mutex>
 
+#include "Macros.h"
+#include "Protocol.h"
 #include "Random.h"
 
 struct WindowInfo {
@@ -34,3 +38,5 @@ struct Position {
 	int x;
 	int y;
 };
+
+extern class GameFramework gGameFramework;

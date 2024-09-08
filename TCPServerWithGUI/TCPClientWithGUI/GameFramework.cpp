@@ -3,6 +3,7 @@
 #include "Resource.h"
 #include "DrawBuffer.h"
 #include "Shape.h"
+#include "ServerService.h"
 
 /* ----------------------------------------
 * 
@@ -11,7 +12,6 @@
   ---------------------------------------- */
 
 GameFramework::GameFramework() = default;
-
 GameFramework::~GameFramework() = default;
 
 bool GameFramework::Init(HINSTANCE instanceHandle)
@@ -23,28 +23,71 @@ bool GameFramework::Init(HINSTANCE instanceHandle)
 
     CreateObjects();
 
-	return false;
+    bool connectResult = mServerService->ConnectToServer();
+
+    mServerService->CreateRecvThread();
+
+	return true;
 }
 
 void GameFramework::Destroy()
 {
     // TODO
+    mServerService.reset();
+    mDrawBuffer.reset();
+    mDrawTestShapes.clear();
 }
 
 // 그리기에 필요한 객체들을 생성하는 함수
 void GameFramework::CreateObjects()
 {
+    mServerService = std::make_unique<ServerService>();
+
     mDrawBuffer = std::make_shared<DrawBuffer>(mWindowInfo);
-    for (int i = 0; i < 1000; ++i) {
-        int x = Random::GetUniformRandom<int>(0, 1000);
-        int y = Random::GetUniformRandom<int>(0, 800);
-        mDrawTestShapes.emplace_back(std::make_unique<PointShape>(x, y, mDrawBuffer));
+}
+
+void GameFramework::AddShape(Shape* shape)
+{
+    mDrawTestShapes.emplace_back(shape);
+}
+
+std::shared_ptr<class DrawBuffer> GameFramework::GetDrawBuffer() const
+{
+    return mDrawBuffer;
+}
+
+void GameFramework::OnProcessingMouse(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    switch (message) {
+    case WM_LBUTTONUP:
+        PacketPosition2D* positionPacket = new PacketPosition2D;
+        positionPacket->size = sizeof(PacketPosition2D);
+        positionPacket->type = PACKET_POSITION2D;
+        positionPacket->x = LOWORD(lParam);
+        positionPacket->y = HIWORD(lParam);
+        mServerService->Send(positionPacket);
+        break;
     }
+}
+
+void GameFramework::OnProcessingKeyboard(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
 }
 
 LRESULT GameFramework::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message) {
+    case WM_KEYDOWN:
+        gGameFramework.OnProcessingKeyboard(hWnd, message, wParam, lParam);
+        break;
+
+    case WM_LBUTTONDOWN:
+    case WM_LBUTTONUP:
+    case WM_RBUTTONDOWN:
+    case WM_RBUTTONUP:
+        gGameFramework.OnProcessingMouse(hWnd, message, wParam, lParam);
+        break;
+
     case WM_COMMAND:
         break;
 
