@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "GameFramework.h"
 #include "Resource.h"
+#include "DrawBuffer.h"
 
 /* ----------------------------------------
 * 
@@ -8,12 +9,18 @@
 * 
   ---------------------------------------- */
 
+GameFramework::GameFramework() = default;
+
+GameFramework::~GameFramework() = default;
+
 bool GameFramework::Init(HINSTANCE instanceHandle)
 {
 	mInstanceHandle = instanceHandle;
 
 	RegisterWindow();
 	CreateMyWindow();
+
+    mDrawBuffer = std::make_shared<DrawBuffer>(mWindowInfo);
 
 	return false;
 }
@@ -29,17 +36,20 @@ LRESULT GameFramework::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
     case WM_COMMAND:
         break;
 
-    case WM_PAINT:
-        break;
-
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
+
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
 
     return LRESULT{ 0 };
+}
+
+void GameFramework::FrameAdvance()
+{
+    mDrawBuffer->Render();
 }
 
 void GameFramework::CreateMyWindow()
@@ -75,7 +85,7 @@ void GameFramework::RegisterWindow()
     wcex.cbSize = sizeof(WNDCLASSEX);
 
     wcex.style = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc = WndProc;
+    wcex.lpfnWndProc = &GameFramework::WndProc;
     wcex.cbClsExtra = 0;
     wcex.cbWndExtra = 0;
     wcex.hInstance = mInstanceHandle;

@@ -27,13 +27,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                 break;
             }
 
-            if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg)) {
-                TranslateMessage(&msg);
-                DispatchMessage(&msg);
-            }
-        }
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
         else {
-            // Frame Update
+            gGameFramework.FrameAdvance();
         }
     }
 
