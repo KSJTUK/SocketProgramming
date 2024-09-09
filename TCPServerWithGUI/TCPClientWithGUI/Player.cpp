@@ -3,6 +3,7 @@
 #include "Shape.h"
 #include "GameFramework.h"
 #include "Input.h"
+#include "DrawBuffer.h"
 
 Player::Player()
 	: mPosition{ Random::GetUniformRandom(10.f, 1000.f), Random::GetUniformRandom(10.f, 800.f) },
@@ -94,5 +95,10 @@ void Player::Update()
 
 void Player::Render()
 {
+	HDC memDC = gGameFramework.GetDrawBuffer()->GetMemDC();
+	auto [x, y] = mPosition;
+	std::string positionStr = mName + "(" + std::to_string(x) + ", " + std::to_string(y) + ")";
+	::TextOutA(memDC, (int)x - 20 - positionStr.size() * 2, (int)y - 40, positionStr.c_str(), positionStr.size());
+
 	mShape->Render();
 }

@@ -40,5 +40,6 @@ private:
 	Position mPosition{ };
 
 	// 플레이어가 그려질 도형정보
+	std::string mName{ "Position" };
 	std::unique_ptr<class Shape> mShape{ };
 };

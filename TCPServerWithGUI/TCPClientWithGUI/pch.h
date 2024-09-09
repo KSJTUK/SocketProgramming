@@ -30,6 +30,7 @@
 #include "Protocol.h"
 #include "Random.h"
 
+inline constexpr byte NONE_CLIENT_ID = 0xFF;
 
 struct WindowInfo {
 	HWND windowHandle;

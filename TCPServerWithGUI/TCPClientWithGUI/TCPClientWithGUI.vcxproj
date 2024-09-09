@@ -143,6 +143,7 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="ServerService.h" />
     <ClInclude Include="Shape.h" />
+    <ClInclude Include="Timer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DrawBuffer.cpp" />
@@ -155,6 +156,7 @@
     <ClCompile Include="ServerService.cpp" />
     <ClCompile Include="Shape.cpp" />
     <ClCompile Include="TCPClientWithGUI.cpp" />
+    <ClCompile Include="Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="TCPClientWithGUI.rc" />

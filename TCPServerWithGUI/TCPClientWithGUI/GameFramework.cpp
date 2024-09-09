@@ -67,7 +67,11 @@ bool GameFramework::Init(HINSTANCE instanceHandle)
     mServerService->CreateRecvThread();
 
     // 서버에 접속했다면 자신의 id를 부여받을 때까지 대기
-    while (mServerService->GetId() == 0xFF) { }
+    // 릴리즈모드에서의 컴파일러 최적화 때문에 따로 volatile 변수를 만들어 검사
+    volatile byte issuedId = mServerService->GetId();
+    while (issuedId == NONE_CLIENT_ID) {
+        issuedId = mServerService->GetId();
+    }
 
     // 최초 접속시 자신의 위치를 다른 클라이언트에게 알리기위해 서버에 전송
     auto [playerX, playerY] = mPlayer->GetPosition();
@@ -110,7 +114,7 @@ void GameFramework::AddShape(Shape* shape)
 void GameFramework::JoinOtherPlayer(byte id, Player* player)
 {
     // 플레이어 추가
-    mOtherPlayers.try_emplace(id, player);
+    mOtherPlayers.emplace(id, player);
 }
 
 void GameFramework::UpdateJoinedPlayer(byte id, Direction2D dir, float velocity)
@@ -210,8 +214,8 @@ void GameFramework::CreateMyWindow()
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT,
         0,
-        800,
-        600,
+        1920,
+        1080,
         nullptr,
         nullptr,
         mInstanceHandle,
