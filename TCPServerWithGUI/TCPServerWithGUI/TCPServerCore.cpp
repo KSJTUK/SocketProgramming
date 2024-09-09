@@ -23,15 +23,14 @@ void TCPServerCore::StartAccept()
             continue;
         }
 
-        short addedId = AddClient(clientSocket);
+        byte addedId = AddClient(clientSocket);
 
         mClientServiceThreads.push_back(std::thread{ [=]()
             {
                 byte id = addedId;
                 Client& client = mClients[id];
-                PacketPlayerConnect connectedPakcet{ sizeof(PacketPlayerConnect), PACKET_PLAYER_CONNECT, id };
 
-                client.Send(&connectedPakcet);
+                client.Send<PacketPlayerConnect>(PACKET_PLAYER_CONNECT, id);
 
                 client.Recv();
             
@@ -59,7 +58,7 @@ void TCPServerCore::Join()
     ::WSACleanup();
 }
 
-std::unordered_map<unsigned short, Client>& TCPServerCore::GetClients()
+std::unordered_map<byte, Client>& TCPServerCore::GetClients()
 {
     return mClients;
 }
@@ -70,7 +69,7 @@ byte TCPServerCore::AddClient(SOCKET clientSocket)
         if (not mClients.contains(id)) {
             Address::NetHostInfo hostInfo = Address::GetHostInfo(clientSocket);
 
-            mClients.emplace(id, Client{ id, clientSocket, hostInfo });
+            mClients.emplace(id, std::move(Client{ id, clientSocket, hostInfo }));
             std::cout << "[클라이언트 접속] IP: " << hostInfo.ip << " | PORT: " << hostInfo.port << "\n";
             return id;
         }
@@ -79,7 +78,7 @@ byte TCPServerCore::AddClient(SOCKET clientSocket)
     return 0xFF;
 }
 
-void TCPServerCore::ExitClient(unsigned short id)
+void TCPServerCore::ExitClient(byte id)
 {
     if (mClients.contains(id)) {
         auto& [ip, port] = mClients[id].GetHostInfo();

@@ -32,16 +32,6 @@ bool ServerService::ConnectToServer()
 	return SOCKET_ERROR != ::connect(mSocket, reinterpret_cast<sockaddr*>(&serverAddress), sizeof(sockaddr_in));
 }
 
-void ServerService::Send(PacketBase* packet)
-{
-	::send(
-		mSocket,
-		reinterpret_cast<char*>(packet),
-		static_cast<int>(packet->size),
-		0
-	);
-}
-
 void ServerService::CreateRecvThread()
 {
 	mRecvThread = std::thread{ [=]()

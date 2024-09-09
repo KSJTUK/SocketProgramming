@@ -91,8 +91,8 @@ int main()
     while (true) {
         posPacket.size = sizeof(PacketPosition2D);
         posPacket.type = PACKET_POSITION2D;
-        posPacket.x = Random::GetUniformRandom(0, 1900);
-        posPacket.y = Random::GetUniformRandom(0, 1000);
+        posPacket.x = Random::GetUniformRandom(0.f, 1900.f);
+        posPacket.y = Random::GetUniformRandom(0.f, 1000.f);
 
         // 보낼 문자열 입력 받기 및, 입력제한 조건 설정
         ASSERT_CRASH(SOCKET_ERROR != ::send(socket, reinterpret_cast<char*>(&posPacket), posPacket.size, 0), "");

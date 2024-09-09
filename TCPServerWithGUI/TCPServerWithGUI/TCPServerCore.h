@@ -11,10 +11,10 @@ public:
 	void Init();
 	void Join();
 
-	std::unordered_map<unsigned short, Client>& GetClients();
+	std::unordered_map<byte, Client>& GetClients();
 
 	byte AddClient(SOCKET clientSocket);
-	void ExitClient(unsigned short id);
+	void ExitClient(byte id);
 
 private:
 	void CreateCoreObjects();
@@ -24,5 +24,5 @@ private:
 	std::mutex mClientsLock{ };
 	std::unique_ptr<class Listener> mListener;
 	std::vector<std::thread> mClientServiceThreads;
-	std::unordered_map<unsigned short, Client> mClients;
+	std::unordered_map<byte, Client> mClients;
 };

@@ -37,8 +37,9 @@ bool GameFramework::Init(HINSTANCE instanceHandle)
     }
 
     auto [playerX, playerY] = mPlayer->GetPosition();
-    PacketPlayerJoin joinedPacket{ sizeof(PacketPlayerJoin), PACKET_PLAYER_JOIN, mServerService->GetId(), playerX, playerY };
-    mServerService->Send(&joinedPacket);
+    //PacketPlayerJoin joinedPacket{ sizeof(PacketPlayerJoin), PACKET_PLAYER_JOIN, mServerService->GetId(), playerX, playerY };
+    //mServerService->Send(&joinedPacket);
+    mServerService->Send<PacketPlayerJoin>(PACKET_PLAYER_JOIN, mServerService->GetId(), playerX, playerY);
 
 	return true;
 }
@@ -59,6 +60,8 @@ void GameFramework::CreateObjects()
     mDrawBuffer = std::make_shared<DrawBuffer>(mWindowInfo);
 
     mPlayer = std::make_unique<Player>();
+    auto [minX, minY, maxX, maxY] = mWindowInfo.windowRect;
+    mPlayer->SetPosition(Random::GetUniformRandom<float>(minX, maxX), Random::GetUniformRandom<float>(minY, maxY));
 }
 
 void GameFramework::AddShape(Shape* shape)
@@ -86,28 +89,25 @@ void GameFramework::ExitPlayer(byte id)
     }
 }
 
-std::shared_ptr<class KeyInput> GameFramework::GetKeyInput() const
+std::shared_ptr<KeyInput> GameFramework::GetKeyInput() const
 {
     return mKeyInput;
 }
 
-std::shared_ptr<class DrawBuffer> GameFramework::GetDrawBuffer() const
+std::shared_ptr<DrawBuffer> GameFramework::GetDrawBuffer() const
 {
     return mDrawBuffer;
 }
 
+// 마우스 메시지 처리 함수
 void GameFramework::OnProcessingMouse(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message) {
     case WM_LBUTTONUP:
+        // 왼쪽 버튼을 누르고 떼면 점 생성 + 점 위치 서버로 보내기
         ReleaseCapture();
         {
-            PacketPosition2D* positionPacket = new PacketPosition2D;
-            positionPacket->size = sizeof(PacketPosition2D);
-            positionPacket->type = PACKET_POSITION2D;
-            positionPacket->x = LOWORD(lParam);
-            positionPacket->y = HIWORD(lParam);
-            mServerService->Send(positionPacket);
+            mServerService->Send<PacketPosition2D>(PACKET_POSITION2D, LOWORD(lParam), HIWORD(lParam));
         }
         break;
 
@@ -156,8 +156,7 @@ void GameFramework::FrameAdvance()
 
     mPlayer->Update();
     auto [dirX, dirY] = mPlayer->GetDirection();
-    PacketMove2D playerPacket{ sizeof(PacketMove2D), PACKET_MOVE2D, mServerService->GetId(), dirX, dirY, mPlayer->GetVelocity()};
-    mServerService->Send(&playerPacket);
+    mServerService->Send<PacketMove2D>(PACKET_MOVE2D, dirX, dirY, mPlayer->GetVelocity());
 
     for (auto& [id, otherPlayer] : mOtherPlayers) {
         otherPlayer->Update();
@@ -185,8 +184,8 @@ void GameFramework::CreateMyWindow()
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT,
         0,
-        CW_USEDEFAULT,
-        0,
+        800,
+        600,
         nullptr,
         nullptr,
         mInstanceHandle,

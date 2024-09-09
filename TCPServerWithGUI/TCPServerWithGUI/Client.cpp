@@ -1,27 +1,37 @@
 #include "pch.h"
 #include "Client.h"
+#include "ClientSession.h"
+
+/* ----------------------------------------
+*
+*				Client
+*
+  ---------------------------------------- */
+
 
 Client::Client() = default;
 
-Client::Client(unsigned short cid, SOCKET socket, const Address::NetHostInfo& hostInfo)
-	: mClientId{ cid },
-	mSocket{ socket },
+Client::Client(byte cid, SOCKET socket, const Address::NetHostInfo& hostInfo)
+	: mSocket{ socket },
 	mHostInfo{ hostInfo }
 {
+	mSession = std::make_unique<ClientSession>(cid);
+}
+
+Client::Client(Client&& other) noexcept
+	: mSocket{ other.mSocket },
+	mHostInfo{ std::move(other.mHostInfo) }
+{
+	mSession.reset(other.mSession.release());
 }
 
 Client::~Client()
 {
 }
 
-void Client::Send(PacketBase* packet)
+const byte Client::GetId() const
 {
-	::send(
-		mSocket,
-		reinterpret_cast<char*>(packet),
-		static_cast<int>(packet->size),
-		0
-	);
+	return mSession->GetId();
 }
 
 void Client::Recv()
@@ -39,17 +49,6 @@ void Client::Recv()
 	}
 }
 
-void Client::BroadCasePacket(byte senderId, PacketBase* packet)
-{
-	for (auto& [id, client] : gServerCore.GetClients()) {
-		if (id == senderId) {
-			continue;
-		}
-
-		client.Send(reinterpret_cast<PacketPosition2D*>(packet));
-	}
-}
-
 void Client::ProcessPacket(char* packet)
 {
 	// PacketBase 구조체에서 1바이트는 size, 1바이트는 type, 1바이트는 송신자 id로 설정했음
@@ -62,19 +61,19 @@ void Client::ProcessPacket(char* packet)
 		break;
 
 	case PACKET_POSITION2D:
-		BroadCasePacket(senderId, reinterpret_cast<PacketPosition2D*>(packet));
+		BroadCasePacket<PacketPosition2D>(PACKET_POSITION2D, senderId, packet);
 		break;
 
 	case PACKET_PLAYER_JOIN:
-		BroadCasePacket(senderId, reinterpret_cast<PacketPlayerJoin*>(packet));
+		BroadCasePacket<PacketPlayerJoin>(PACKET_PLAYER_JOIN, senderId, packet);
 		break;
 
 	case PACKET_PLAYER_EXIT:
-		BroadCasePacket(senderId, reinterpret_cast<PacketPlayerExit*>(packet));
+		BroadCasePacket<PacketPlayerExit>(PACKET_PLAYER_EXIT, senderId, packet);
 		break;
 
 	case PACKET_MOVE2D:
-		BroadCasePacket(senderId, reinterpret_cast<PacketMove2D*>(packet));
+		BroadCasePacket<PacketMove2D>(PACKET_MOVE2D, senderId, packet);
 		break;
 	}
 }
