@@ -30,6 +30,7 @@
 #include "Protocol.h"
 #include "Random.h"
 
+
 struct WindowInfo {
 	HWND windowHandle;
 	RECT windowRect;

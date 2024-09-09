@@ -66,21 +66,19 @@ bool GameFramework::Init(HINSTANCE instanceHandle)
 
     mServerService->CreateRecvThread();
 
-    // 
-    while (mServerService->GetId() == 0xFF) {
+    // 서버에 접속했다면 자신의 id를 부여받을 때까지 대기
+    while (mServerService->GetId() == 0xFF) { }
 
-    }
-
+    // 최초 접속시 자신의 위치를 다른 클라이언트에게 알리기위해 서버에 전송
     auto [playerX, playerY] = mPlayer->GetPosition();
-    //PacketPlayerJoin joinedPacket{ sizeof(PacketPlayerJoin), PACKET_PLAYER_JOIN, mServerService->GetId(), playerX, playerY };
-    //mServerService->Send(&joinedPacket);
-    mServerService->Send<PacketPlayerJoin>(PACKET_PLAYER_JOIN, mServerService->GetId(), playerX, playerY);
+    mServerService->Send<PacketPlayerJoin>(PACKET_PLAYER_JOIN, playerX, playerY);
 
 	return true;
 }
 
 void GameFramework::Destroy()
 {
+    mServerService->Send<PacketPlayerExit>(PACKET_PLAYER_EXIT);
     // TODO
     mServerService->Join();
 
@@ -98,7 +96,10 @@ void GameFramework::CreateObjects()
 
     mPlayer = std::make_unique<Player>();
     auto [minX, minY, maxX, maxY] = mWindowInfo.windowRect;
-    mPlayer->SetPosition(Random::GetUniformRandom<float>(minX, maxX), Random::GetUniformRandom<float>(minY, maxY));
+    mPlayer->SetPosition(
+        static_cast<float>(Random::GetUniformRandom(minX, maxX)),
+        static_cast<float>(Random::GetUniformRandom(minY, maxY))
+    );
 }
 
 void GameFramework::AddShape(Shape* shape)
@@ -108,11 +109,13 @@ void GameFramework::AddShape(Shape* shape)
 
 void GameFramework::JoinOtherPlayer(byte id, Player* player)
 {
+    // 플레이어 추가
     mOtherPlayers.try_emplace(id, player);
 }
 
 void GameFramework::UpdateJoinedPlayer(byte id, Direction2D dir, float velocity)
 {
+    // 해당 플레이어 정보 업데이트
     if (mOtherPlayers.contains(id)) {
         mOtherPlayers[id]->SetDirection(dir);
         mOtherPlayers[id]->SetValocity(velocity);
@@ -144,9 +147,13 @@ void GameFramework::OnProcessingMouse(HWND hWnd, UINT message, WPARAM wParam, LP
         // 왼쪽 버튼을 누르고 떼면 점 생성 + 점 위치 서버로 보내기
         ReleaseCapture();
         {
-            mServerService->Send<PacketPosition2D>(PACKET_POSITION2D, LOWORD(lParam), HIWORD(lParam));
+            float x = static_cast<float>(LOWORD(lParam));
+            float y = static_cast<float>(HIWORD(lParam));
+            mServerService->Send<PacketPosition2D>(PACKET_POSITION2D, x, y);
+            AddShape(new PointShape{ x, y, mDrawBuffer});
         }
         break;
+
 
     case WM_LBUTTONDOWN:
         SetCapture(mWindowInfo.windowHandle);

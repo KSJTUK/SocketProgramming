@@ -3,6 +3,12 @@
 #include "Listener.h"
 #include "Client.h"
 
+/* ----------------------------------------
+*
+*				TCPServerCore
+*
+  ---------------------------------------- */
+
 TCPServerCore::TCPServerCore() = default;
 TCPServerCore::~TCPServerCore() = default;
 

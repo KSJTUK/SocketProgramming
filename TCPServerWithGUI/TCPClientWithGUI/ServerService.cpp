@@ -4,6 +4,12 @@
 #include "Shape.h"
 #include "Player.h"
 
+/* ----------------------------------------
+*
+*				ServerService
+*
+  ---------------------------------------- */
+
 ServerService::ServerService()
 {
 	WSAData wsaData;
@@ -13,12 +19,9 @@ ServerService::ServerService()
 	ASSERT_CRASH(INVALID_SOCKET != mSocket, "Socket is not Created");
 }
 
-ServerService::~ServerService()
-{
-	::shutdown(mSocket, SD_BOTH);
-	::closesocket(mSocket);
-}
+ServerService::~ServerService() = default;
 
+// 서버와 연결설정
 bool ServerService::ConnectToServer()
 {
 	sockaddr_in serverAddress;
@@ -30,15 +33,18 @@ bool ServerService::ConnectToServer()
 	return SOCKET_ERROR != ::connect(mSocket, reinterpret_cast<sockaddr*>(&serverAddress), sizeof(sockaddr_in));
 }
 
+// 데이터 수신 쓰레드 생성
 void ServerService::CreateRecvThread()
 {
 	mRecvThread = std::thread{ [=]()
 		{
+			// 추가로 할 작업이 있다면 여기에..
 			Recv();
 		}
 	};
 }
 
+// 쓰레드 소멸 대기
 void ServerService::Join()
 {
 	mRecvThreadRunning = false;
@@ -47,6 +53,7 @@ void ServerService::Join()
 	mRecvThread.join();
 }
 
+// 실제로 데이터를 수신하는 함수
 void ServerService::Recv()
 {
 	while (mRecvThreadRunning) {
@@ -62,6 +69,7 @@ void ServerService::Recv()
 	}
 }
 
+// 받은 패킷 처리
 void ServerService::ProcessPacket(char* packet)
 {
 	// PacketBase 구조체에서 1바이트는 size, 1바이트는 type으로 설정했음

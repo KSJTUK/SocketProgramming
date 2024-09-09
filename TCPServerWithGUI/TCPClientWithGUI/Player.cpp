@@ -6,13 +6,13 @@
 
 Player::Player()
 	: mPosition{ Random::GetUniformRandom(10.f, 1000.f), Random::GetUniformRandom(10.f, 800.f) },
-	mShape{ std::make_unique<Square>(mPosition, 40, 40, gGameFramework.GetDrawBuffer())}
+	mShape{ std::make_unique<Square>(mPosition, DEFAUT_SIZE, DEFAUT_SIZE, gGameFramework.GetDrawBuffer())}
 {
 }
 
 Player::Player(float x, float y)
 	: mPosition{ x, y },
-	mShape{ std::make_unique<Square>(mPosition, 40, 40, gGameFramework.GetDrawBuffer()) }
+	mShape{ std::make_unique<Square>(mPosition, DEFAUT_SIZE, DEFAUT_SIZE, gGameFramework.GetDrawBuffer()) }
 {
 }
 
