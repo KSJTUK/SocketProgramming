@@ -20,12 +20,14 @@ public:
 	~ClientSession();
 
 public:
+	void SetPosition(float x, float y);
+
 	byte GetId() const { return mId; }
-	std::pair<float, float> GetPosition() const { return std::make_pair(x, y); }
+	std::pair<float, float> GetPosition() const { return std::make_pair(mX, mY); }
 
 private:
 	byte mId{ 0xFF };
 	char mName[MAX_NAME_BYTE + 1]{ };
-	float x{ };
-	float y{ };
+	float mX{ };
+	float mY{ };
 };

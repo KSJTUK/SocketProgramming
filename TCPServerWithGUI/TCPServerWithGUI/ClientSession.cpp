@@ -15,3 +15,9 @@ ClientSession::ClientSession(byte clientId)
 }
 
 ClientSession::~ClientSession() = default;
+
+void ClientSession::SetPosition(float x, float y)
+{
+	mX = x;
+	mY = y;
+}

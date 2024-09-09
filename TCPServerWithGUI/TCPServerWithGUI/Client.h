@@ -31,6 +31,7 @@ public:
 	// Getter
 	const Address::NetHostInfo& GetHostInfo() const { return mHostInfo; };
 	const byte GetId() const;
+	std::pair<float, float> GetPosition() const;
 
 	void Recv();
 
@@ -76,6 +77,7 @@ public:
 
 private:
 	void ProcessPacket(char* packet);
+	void SendOtherClientsSession(byte targetId);
 
 	template <typename PacketType> requires std::is_base_of_v<PacketBase, PacketType>
 	void BroadCasePacket(byte type, byte senderId, char* data)
