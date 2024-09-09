@@ -9,6 +9,41 @@
 #include "Player.h"
 
 /* ----------------------------------------
+*
+*			  Window Procedure
+*
+  ---------------------------------------- */
+
+LRESULT GameFramework::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    switch (message) {
+    case WM_KEYDOWN:
+        gGameFramework.OnProcessingKeyboard(hWnd, message, wParam, lParam);
+        break;
+
+    case WM_LBUTTONDOWN:
+    case WM_LBUTTONUP:
+    case WM_RBUTTONDOWN:
+    case WM_RBUTTONUP:
+        gGameFramework.OnProcessingMouse(hWnd, message, wParam, lParam);
+        break;
+
+    case WM_COMMAND:
+        break;
+
+    case WM_DESTROY:
+        PostQuitMessage(0);
+        break;
+
+    default:
+        return DefWindowProc(hWnd, message, wParam, lParam);
+    }
+
+    return LRESULT{ 0 };
+}
+
+
+/* ----------------------------------------
 * 
 *				GameFramework
 * 
@@ -47,6 +82,8 @@ bool GameFramework::Init(HINSTANCE instanceHandle)
 void GameFramework::Destroy()
 {
     // TODO
+    mServerService->Join();
+
     mServerService.reset();
     mDrawBuffer.reset();
     mDrawTestShapes.clear();
@@ -121,39 +158,10 @@ void GameFramework::OnProcessingKeyboard(HWND hWnd, UINT message, WPARAM wParam,
 {
 }
 
-LRESULT GameFramework::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    switch (message) {
-    case WM_KEYDOWN:
-        gGameFramework.OnProcessingKeyboard(hWnd, message, wParam, lParam);
-        break;
-
-    case WM_LBUTTONDOWN:
-    case WM_LBUTTONUP:
-    case WM_RBUTTONDOWN:
-    case WM_RBUTTONUP:
-        gGameFramework.OnProcessingMouse(hWnd, message, wParam, lParam);
-        break;
-
-    case WM_COMMAND:
-        break;
-
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        break;
-
-    default:
-        return DefWindowProc(hWnd, message, wParam, lParam);
-    }
-
-    return LRESULT{ 0 };
-}
-
-void GameFramework::FrameAdvance()
+// 업데이트 및 렌더링 함수
+void GameFramework::Update()
 {
     mKeyInput->Input();
-    mDrawBuffer->CleanupBuffer();
-
     mPlayer->Update();
     auto [dirX, dirY] = mPlayer->GetDirection();
     mServerService->Send<PacketMove2D>(PACKET_MOVE2D, dirX, dirY, mPlayer->GetVelocity());
@@ -161,6 +169,11 @@ void GameFramework::FrameAdvance()
     for (auto& [id, otherPlayer] : mOtherPlayers) {
         otherPlayer->Update();
     }
+}
+
+void GameFramework::Render()
+{
+    mDrawBuffer->CleanupBuffer();
 
     // Rendering
     for (auto& shape : mDrawTestShapes) {
@@ -174,6 +187,12 @@ void GameFramework::FrameAdvance()
     mPlayer->Render();
 
     mDrawBuffer->CopyBufferMemToMain();
+}
+
+void GameFramework::FrameAdvance()
+{
+    Update();
+    Render();
 }
 
 void GameFramework::CreateMyWindow()

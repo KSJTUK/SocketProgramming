@@ -13,6 +13,8 @@ public:
 	bool ConnectToServer();
 	void CreateRecvThread();
 
+	void Join();
+
 	// 위에서의 단점을 극복하기 위해 템플릿으로 설계
 	template<typename PacketType, typename... Args> requires std::is_base_of_v<PacketBase, PacketType>
 	void Send(byte type, Args&&... args)
@@ -33,7 +35,10 @@ private:
 private:
 	SOCKET mSocket{ INVALID_SOCKET };
 	std::thread mRecvThread{ };
+
 	byte mId{ 0xFF };
+	volatile bool mRecvThreadRunning{ true };
+
 	char mRecvBuffer[RECV_SIZE]{ };
 };
 

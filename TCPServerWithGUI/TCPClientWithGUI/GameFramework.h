@@ -23,16 +23,26 @@ public:
 	// 그리기에 필요한 객체들을 생성하는 함수
 	void CreateObjects();
 	void AddShape(class Shape* shape);
+
+	// 다른 플레이어 접속, 퇴장, 업데이트 처리
 	void JoinOtherPlayer(byte id, class Player* player);
 	void UpdateJoinedPlayer(byte id, Direction2D dir, float velocity);
 	void ExitPlayer(byte id);
-	
+
+	// Getter
+	HWND GetWindowHandle() const { return mWindowInfo.windowHandle; }
 	std::shared_ptr<class KeyInput> GetKeyInput() const;
 	std::shared_ptr<class DrawBuffer> GetDrawBuffer() const;
 
+	// 윈도우 메시지 처리
 	void OnProcessingMouse(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	void OnProcessingKeyboard(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
+	// 업데이트와 렌더링 부분 분리
+	void Update();
+	void Render();
+
+	// 전체 프레임 작업 수행
 	void FrameAdvance();
 
 private:

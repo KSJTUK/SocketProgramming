@@ -17,8 +17,6 @@ ServerService::~ServerService()
 {
 	::shutdown(mSocket, SD_BOTH);
 	::closesocket(mSocket);
-
-	mRecvThread.join();
 }
 
 bool ServerService::ConnectToServer()
@@ -41,9 +39,17 @@ void ServerService::CreateRecvThread()
 	};
 }
 
+void ServerService::Join()
+{
+	mRecvThreadRunning = false;
+	::shutdown(mSocket, SD_BOTH);
+
+	mRecvThread.join();
+}
+
 void ServerService::Recv()
 {
-	while (true) {
+	while (mRecvThreadRunning) {
 		int len = ::recv(mSocket, mRecvBuffer, RECV_SIZE, 0);
 
 		if (len <= 0) {
