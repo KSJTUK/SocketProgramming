@@ -13,6 +13,8 @@ public:
 	~DrawBuffer();
 
 public:
+	void SetCameraPosition(Position cameraPosition);
+	Position GetCameraPosition() const;
 	HDC GetMemDC() const;
 
 	void CleanupBuffer();
@@ -23,5 +25,6 @@ private:
 	HDC mMainFrameDC{ };
 	HDC mMemDC{ };
 	HBITMAP mMemBmp{ };
+	Position mCameraPosition{ };
 };
 

@@ -7,11 +7,27 @@
   ---------------------------------------- */
 
 class Player {
+	inline static constexpr Direction2D DIRECTIONS[4]{
+		/* dx, dy */
+		{ -1, 0 }, /* LEFT */
+		{ 0, -1}, /* UP */
+		{ 1, 0 }, /* RIGHT */
+		{ 0, 1}, /* DOWN */
+	};
+
 	inline static constexpr unsigned int DEFAUT_SIZE = 40;
+	enum {
+		LEFT,
+		UP,
+		RIGHT,
+		DOWN
+	};
 
 public:
 	Player();
+	Player(bool playable);
 	Player(float x, float y);
+	Player(float x, float y, bool playable);
 	~Player();
 
 public:
@@ -29,6 +45,10 @@ public:
 
 	// 
 	void Move();
+	void MoveLeft();
+	void MoveUp();
+	void MoveRight();
+	void MoveDown();
 
 	void Update();
 	void Render();
@@ -38,6 +58,8 @@ private:
 	Direction2D mDirection{ };
 	float mVelocity{ };
 	Position mPosition{ };
+
+	bool mPlayable{ false };
 
 	// 플레이어가 그려질 도형정보
 	std::string mName{ "Position" };

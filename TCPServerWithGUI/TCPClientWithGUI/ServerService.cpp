@@ -24,12 +24,14 @@ ServerService::~ServerService() = default;
 // 서버와 연결설정
 bool ServerService::ConnectToServer()
 {
+	// 서버 IP, PORT번호 설정
 	sockaddr_in serverAddress;
 	std::memset(&serverAddress, 0, sizeof(sockaddr_in));
 	serverAddress.sin_family = AF_INET;
 	serverAddress.sin_port = ::htons(SERVER_PORT);
 	::inet_pton(AF_INET, SERVER_IP, &serverAddress.sin_addr);
 	
+	// 서버와 연결 시도, 최대 허용횟수를 넘어가면 에러 -> 강제종료
 	int tryCount = 0;
 	while (SOCKET_ERROR == ::connect(mSocket, reinterpret_cast<sockaddr*>(&serverAddress), sizeof(sockaddr_in))) {
 		if (tryCount >= MAX_TRY_CONNECT) {
@@ -64,8 +66,11 @@ void ServerService::Join()
 {
 	mRecvThreadRunning = false;
 	::shutdown(mSocket, SD_BOTH);
+	::closesocket(mSocket);
 
-	mRecvThread.join();
+	if (mRecvThread.joinable()) {
+		mRecvThread.join();
+	}
 }
 
 // 실제로 데이터를 수신하는 함수
@@ -75,8 +80,6 @@ void ServerService::Recv()
 		int len = ::recv(mSocket, mRecvBuffer, RECV_SIZE, 0);
 
 		if (len <= 0) {
-			::shutdown(mSocket, SD_BOTH);
-			::closesocket(mSocket);
 			break;
 		}
 
@@ -94,36 +97,39 @@ void ServerService::ProcessPacket(char* packet)
 
 	switch (type) {
 	case PACKET_PLAYER_CONNECT:
-	{
-		mId = senderId;
-	}
-	break;
+		{
+			mId = senderId;
+		}
+		break;
 
 	case PACKET_POSITION2D:
-	{
-		PacketPosition2D* position = reinterpret_cast<PacketPosition2D*>(packet);
-		gGameFramework.AddShape(new PointShape{ position->x, position->y, gGameFramework.GetDrawBuffer() });
-	}
-	break;
+		{
+			PacketPosition2D* position = reinterpret_cast<PacketPosition2D*>(packet);
+			gGameFramework.AddShape(new PointShape{ position->x, position->y, gGameFramework.GetDrawBuffer() });
+		}
+		break;
 
 	case PACKET_PLAYER_JOIN:
-	{
-		PacketPlayerJoin* joinedPlayer = reinterpret_cast<PacketPlayerJoin*>(packet);
-		gGameFramework.JoinOtherPlayer(senderId, new Player{ joinedPlayer->x, joinedPlayer->y });
-	}
-	break;
+		{
+			PacketPlayerJoin* joinedPlayer = reinterpret_cast<PacketPlayerJoin*>(packet);
+			gGameFramework.JoinOtherPlayer(senderId, new Player{ joinedPlayer->x, joinedPlayer->y });
+		}
+		break;
 
 	case PACKET_MOVE2D:
-	{
-		PacketMove2D* moveInfo = reinterpret_cast<PacketMove2D*>(packet);
-		gGameFramework.UpdateJoinedPlayer(senderId, { moveInfo->x, moveInfo->y }, moveInfo->velocity);
-	}
-	break;
+		{
+			PacketMove2D* moveInfo = reinterpret_cast<PacketMove2D*>(packet);
+			gGameFramework.UpdateJoinedPlayer(senderId, { moveInfo->x, moveInfo->y }, moveInfo->velocity);
+		}
+		break;
 
 	case PACKET_PLAYER_EXIT:
-	{
-		gGameFramework.ExitPlayer(senderId);
-	}
-	break;
+		{
+			gGameFramework.ExitPlayer(senderId);
+		}
+		break;
+
+	default:
+		break;
 	}
 }

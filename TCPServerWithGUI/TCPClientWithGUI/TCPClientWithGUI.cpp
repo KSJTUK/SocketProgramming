@@ -14,7 +14,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(lpCmdLine);
 
     if (false == gGameFramework.Init(hInstance)) {
-        ::PostQuitMessage(0);
+        gGameFramework.Destroy();
         return EXIT_FAILURE;
     }
 
@@ -28,8 +28,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                 break;
             }
 
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
+            if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg)) {
+                TranslateMessage(&msg);
+                DispatchMessage(&msg);
+            }
 		}
         else {
             gGameFramework.FrameAdvance();

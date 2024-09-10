@@ -12,12 +12,13 @@
 *
 *			  Window Procedure
 *
-  ---------------------------------------- */
+  ---------------------------------------- */   
 
 LRESULT GameFramework::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message) {
     case WM_KEYDOWN:
+    case WM_KEYUP:
         gGameFramework.OnProcessingKeyboard(hWnd, message, wParam, lParam);
         break;
 
@@ -26,6 +27,14 @@ LRESULT GameFramework::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
     case WM_RBUTTONDOWN:
     case WM_RBUTTONUP:
         gGameFramework.OnProcessingMouse(hWnd, message, wParam, lParam);
+        break;
+
+    case WM_SETFOCUS:
+        gGameFramework.SetKeyboardFocuse(true);
+        break;
+
+    case WM_KILLFOCUS:
+        gGameFramework.SetKeyboardFocuse(false);
         break;
 
     case WM_COMMAND:
@@ -87,12 +96,23 @@ bool GameFramework::Init(HINSTANCE instanceHandle)
 void GameFramework::Destroy()
 {
     mServerService->Send<PacketPlayerExit>(PACKET_PLAYER_EXIT);
+
     // TODO
     mServerService->Join();
 
     mServerService.reset();
     mDrawBuffer.reset();
     mDrawTestShapes.clear();
+}
+
+void GameFramework::SetKeyboardFocuse(bool focused)
+{
+    mKeyboardFocused = focused;
+}
+
+void GameFramework::SetMouseCapture(bool captured)
+{
+    mMouseCaptured = captured;
 }
 
 // 그리기에 필요한 객체들을 생성하는 함수
@@ -102,7 +122,7 @@ void GameFramework::CreateObjects()
     mServerService = std::make_unique<ServerService>();
     mDrawBuffer = std::make_shared<DrawBuffer>(mWindowInfo);
 
-    mPlayer = std::make_unique<Player>();
+    mPlayer = std::make_unique<Player>(true);
     auto [minX, minY, maxX, maxY] = mWindowInfo.windowRect;
     mPlayer->SetPosition(
         static_cast<float>(Random::GetUniformRandom(minX, maxX)),
@@ -162,7 +182,6 @@ void GameFramework::OnProcessingMouse(HWND hWnd, UINT message, WPARAM wParam, LP
         }
         break;
 
-
     case WM_LBUTTONDOWN:
         SetCapture(mWindowInfo.windowHandle);
         break;
@@ -171,13 +190,34 @@ void GameFramework::OnProcessingMouse(HWND hWnd, UINT message, WPARAM wParam, LP
 
 void GameFramework::OnProcessingKeyboard(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    switch (message) {
+    case WM_KEYUP:
+        switch (wParam) {
+        case VK_ESCAPE:
+            PostQuitMessage(0);
+            break;
+
+        default:
+            break;
+        }
+        break;
+
+    default:
+        break;
+    }
 }
 
 // 업데이트 및 렌더링 함수
 void GameFramework::Update()
 {
-    mKeyInput->Input();
+    // 현재 프로세스가 아닌 다른 프로세스에서의 입력은 감지하지 않도록 설정
+    if (mKeyboardFocused) {
+        mKeyInput->Input();
+    }
+
     mPlayer->Update();
+    mDrawBuffer->SetCameraPosition(mPlayer->GetPosition());
+
     auto [dirX, dirY] = mPlayer->GetDirection();
     mServerService->Send<PacketMove2D>(PACKET_MOVE2D, dirX, dirY, mPlayer->GetVelocity());
 
@@ -233,7 +273,9 @@ void GameFramework::CreateMyWindow()
     ShowWindow(mWindowInfo.windowHandle, SW_SHOW);
     UpdateWindow(mWindowInfo.windowHandle);
 
+    // 윈도우 창이 만들어지면 클라이언트 영역을 가져오고, 키보드 포커스 설정
     GetClientRect(mWindowInfo.windowHandle, &mWindowInfo.windowRect);
+    SetFocus(mWindowInfo.windowHandle);
 }
 
 void GameFramework::RegisterWindow()

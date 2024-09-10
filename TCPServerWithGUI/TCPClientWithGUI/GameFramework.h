@@ -20,6 +20,10 @@ public:
 	bool Init(HINSTANCE instanceHandle);
 	void Destroy();
 
+	// 키보드 마우스 캡쳐 (여러 프로세스가 동시에 입력받는 걸 방지)
+	void SetKeyboardFocuse(bool focused);
+	void SetMouseCapture(bool captured);
+
 	// 그리기에 필요한 객체들을 생성하는 함수
 	void CreateObjects();
 	void AddShape(class Shape* shape);
@@ -53,6 +57,9 @@ private:
 	// instance, window 핸들
 	HINSTANCE		mInstanceHandle{ };
 	WindowInfo		mWindowInfo{ };
+
+	bool mKeyboardFocused{ false };
+	bool mMouseCaptured{ false };
 
 	// 생성된 윈도우 이름, 클래스 이름 저장
 	std::wstring	mWindowName{ L"GUI 클라이언트" };

@@ -15,43 +15,50 @@ public:
     ~KeyInput() = default;
 
 public:
-    void Input() {
+    void Input() 
+    {
         for (int keyIndex = 0; keyIndex < MAX_BUFFER; ++keyIndex) {
-            Input(keyIndex);
+            if (GetAsyncKeyState(keyIndex) & 0x8000) {
+                KeyDown(keyIndex);
+            }
+            else {
+                KeyUp(keyIndex);
+            }
         }
     }
 
-    void Reset() {
+    void Reset() 
+    {
         memset(keyInfo, false, MAX_BUFFER);
     }
 
-    KEYINFO& operator[](int idx) {
+    KEYINFO& operator[](int idx) 
+    {
         return keyInfo[idx];
     }
 
-private:
-    void Input(int keyIndex)
+    void KeyDown(int keyIndex)
     {
-        if (GetAsyncKeyState(keyIndex) & 0x8000) {
-            if (keyInfo[keyIndex].down) {
-                keyInfo[keyIndex].pressed = true;
-                keyInfo[keyIndex].down = false;
-            }
-            else {
-                if (not keyInfo[keyIndex].pressed) {
-                    keyInfo[keyIndex].down = true;
-                }
-            }
+        if (keyInfo[keyIndex].down) {
+            keyInfo[keyIndex].pressed = true;
+            keyInfo[keyIndex].down = false;
         }
         else {
-            if (keyInfo[keyIndex].up) {
-                keyInfo[keyIndex].up = false;
+            if (not keyInfo[keyIndex].pressed) {
+                keyInfo[keyIndex].down = true;
             }
-            else if (keyInfo[keyIndex].down || keyInfo[keyIndex].pressed) {
-                keyInfo[keyIndex].up = true;
-                keyInfo[keyIndex].pressed = false;
-                keyInfo[keyIndex].down = false;
-            }
+        }
+    }
+
+    void KeyUp(int keyIndex)
+    {
+        if (keyInfo[keyIndex].up) {
+            keyInfo[keyIndex].up = false;
+        }
+        else if (keyInfo[keyIndex].down || keyInfo[keyIndex].pressed) {
+            keyInfo[keyIndex].up = true;
+            keyInfo[keyIndex].pressed = false;
+            keyInfo[keyIndex].down = false;
         }
     }
 
