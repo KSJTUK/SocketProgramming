@@ -3,13 +3,16 @@
 /* ----------------------------------------
 *				ServerService
 * 
-* 기본적인 서버로 송신, 서버로부터 수신, 연결설정
-* , 패킷처리 등을 담당하는 클래스
+* 기본적인 서버로 송신, 서버로부터 수신, 연결설정,
+* 패킷처리 등을 담당하는 클래스
+* 
   ---------------------------------------- */
 
-
 class ServerService {
+	// 데이터 수신 버퍼의 크기
 	inline static constexpr int RECV_SIZE = 1024;
+	// 연결실패시 연결을 다시 시도해볼 횟수
+	inline static constexpr int MAX_TRY_CONNECT = 2;
 
 public:
 	ServerService();

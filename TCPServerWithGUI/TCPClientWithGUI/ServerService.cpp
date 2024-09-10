@@ -30,7 +30,22 @@ bool ServerService::ConnectToServer()
 	serverAddress.sin_port = ::htons(SERVER_PORT);
 	::inet_pton(AF_INET, SERVER_IP, &serverAddress.sin_addr);
 	
-	return SOCKET_ERROR != ::connect(mSocket, reinterpret_cast<sockaddr*>(&serverAddress), sizeof(sockaddr_in));
+	int tryCount = 0;
+	while (SOCKET_ERROR == ::connect(mSocket, reinterpret_cast<sockaddr*>(&serverAddress), sizeof(sockaddr_in))) {
+		if (tryCount >= MAX_TRY_CONNECT) {
+			MessageBox(nullptr, L"최대 연결 시도횟수를 초과했습니다. 프로그램을 종료합니다.", L"서버와의 연결에 실패했습니다.", MB_OK | MB_ICONERROR);
+			return false;
+		}
+
+		int result = MessageBox(nullptr, L"다시 시도할까요?", L"서버와의 연결에 실패했습니다.", MB_YESNO | MB_ICONERROR);
+		if (IDNO == result) {
+			return false;
+		}
+
+		tryCount += 1;
+	}
+
+	return true;
 }
 
 // 데이터 수신 쓰레드 생성

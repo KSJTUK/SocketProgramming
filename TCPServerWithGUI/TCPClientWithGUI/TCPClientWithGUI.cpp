@@ -13,7 +13,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
-    gGameFramework.Init(hInstance);
+    if (false == gGameFramework.Init(hInstance)) {
+        ::PostQuitMessage(0);
+        return EXIT_FAILURE;
+    }
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_TCPCLIENTWITHGUI));
 

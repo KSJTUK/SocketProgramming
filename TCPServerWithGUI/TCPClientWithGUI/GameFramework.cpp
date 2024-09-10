@@ -62,7 +62,11 @@ bool GameFramework::Init(HINSTANCE instanceHandle)
 
     CreateObjects();
 
-    bool connectResult = mServerService->ConnectToServer();
+    // 연결에 실패하면 바로 종료
+    bool connectSuccess = mServerService->ConnectToServer();
+    if (not connectSuccess) {
+        return false;
+    }
 
     mServerService->CreateRecvThread();
 
@@ -214,8 +218,8 @@ void GameFramework::CreateMyWindow()
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT,
         0,
-        1920,
-        1080,
+        1280,
+        720,
         nullptr,
         nullptr,
         mInstanceHandle,

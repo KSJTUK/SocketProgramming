@@ -31,6 +31,8 @@ void TCPServerCore::StartAccept()
 
         byte addedId = AddClient(clientSocket);
 
+        // 람다를 이용해 생성
+        // 처음 연결시 클라이언트에게 ID를 부여하는 패킷 전송
         mClientServiceThreads.push_back(std::thread{ [=]()
             {
                 byte id = addedId;

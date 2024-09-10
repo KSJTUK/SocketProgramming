@@ -6,12 +6,12 @@
 *
 ----------------------------------*/
 
-#define USE_LOOP_BACK 1
+#define USE_LOOP_BACK 0
 
 #if USE_LOOP_BACK
 inline constexpr const char* SERVER_IP = "127.0.0.1";
 #else
-inline constexpr const char* SERVER_IP = "";
+inline constexpr const char* SERVER_IP = "183.101.111.33";
 #endif
 inline constexpr unsigned short SERVER_PORT = 7777;
 
