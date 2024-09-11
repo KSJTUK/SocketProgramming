@@ -7,21 +7,6 @@
   ---------------------------------------- */
 
 class Player {
-	inline static constexpr Direction2D DIRECTIONS[4]{
-		/* dx, dy */
-		{ -1, 0 }, /* LEFT */
-		{ 0, -1}, /* UP */
-		{ 1, 0 }, /* RIGHT */
-		{ 0, 1}, /* DOWN */
-	};
-
-	enum {
-		LEFT,
-		UP,
-		RIGHT,
-		DOWN
-	};
-
 	inline static constexpr unsigned int DEFAUT_SIZE = 40;
 	inline static constexpr float DEFAULT_SPEED = 30.0f;
 
@@ -45,12 +30,13 @@ public:
 	Position GetPosition() const { return mPosition; }
 	float GetVelocity() const { return mVelocity; }
 
+	void RegisterExecutionFn();
+
 	// 
-	void Move(const float deltaTime);
-	void MoveLeft();
-	void MoveUp();
-	void MoveRight();
-	void MoveDown();
+	void MoveLeft(float deltaTime);
+	void MoveUp(float deltaTime);
+	void MoveRight(float deltaTime);
+	void MoveDown(float deltaTime);
 
 	void Update(const float deltaTime);
 	void Render();

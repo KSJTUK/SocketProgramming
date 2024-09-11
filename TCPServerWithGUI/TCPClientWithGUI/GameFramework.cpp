@@ -125,6 +125,9 @@ void GameFramework::CreateObjects()
     mServerService = std::make_unique<ServerService>();
     mPlayer = std::make_unique<Player>(true);
 
+    // 플레이어의 키 입력처리 함수들을 등록
+    mPlayer->RegisterExecutionFn();
+
     // 플레이어의 시작 위치를 랜덤하게 지정
     auto [minX, minY, maxX, maxY] = mWindowInfo.windowRect;
     mPlayer->SetPosition(
@@ -139,12 +142,11 @@ void GameFramework::JoinOtherPlayer(byte id, Player* player)
     mOtherPlayers.emplace(id, player);
 }
 
-void GameFramework::UpdateJoinedPlayer(byte id, Direction2D dir, float velocity)
+void GameFramework::UpdateJoinedPlayer(byte id, Position pos)
 {
     // 해당 플레이어 정보 업데이트
     if (mOtherPlayers.contains(id)) {
-        mOtherPlayers[id]->SetDirection(dir);
-        mOtherPlayers[id]->SetValocity(velocity);
+        mOtherPlayers[id]->SetPosition(pos);
     }
 }
 
@@ -208,20 +210,21 @@ void GameFramework::OnProcessingKeyboard(HWND hWnd, UINT message, WPARAM wParam,
 // 업데이트 및 렌더링 함수
 void GameFramework::Update()
 {
-    // 현재 프로세스가 아닌 다른 프로세스에서의 입력은 감지하지 않도록 설정
-    if (mKeyboardFocused) {
-        mKeyInput->Input();
-    }
     mTimer->Update();
     const float deltaTime = mTimer->GetDeltaTime();
+
+    // 현재 프로세스가 아닌 다른 프로세스에서의 입력은 감지하지 않도록 설정
+    if (mKeyboardFocused) {
+        mKeyInput->Input(deltaTime);
+    }
 
     mServerService->Send<PacketPing>(PACKET_PING, mTimer->GetCurrentTick());
 
     mPlayer->Update(deltaTime);
     mDrawBuffer->SetCameraPosition(mPlayer->GetPosition());
 
-    auto [dirX, dirY] = mPlayer->GetDirection();
-    mServerService->Send<PacketMove2D>(PACKET_MOVE2D, dirX, dirY, mPlayer->GetVelocity());
+    auto [playerX, playerY] = mPlayer->GetPosition();
+    mServerService->Send<PacketPosition2D>(PACKET_POSITION2D, playerX, playerY);
 
     for (auto& [id, otherPlayer] : mOtherPlayers) {
         otherPlayer->Update(deltaTime);

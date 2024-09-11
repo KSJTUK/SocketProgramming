@@ -32,7 +32,7 @@ public:
 
 	// 다른 플레이어 접속, 퇴장, 업데이트 처리
 	void JoinOtherPlayer(byte id, class Player* player);
-	void UpdateJoinedPlayer(byte id, Direction2D dir, float velocity);
+	void UpdateJoinedPlayer(byte id, Position pos);
 	void ExitPlayer(byte id);
 
 	// 핑에 대한 결과를 받는 함수

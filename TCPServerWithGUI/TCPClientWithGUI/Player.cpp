@@ -62,42 +62,55 @@ void Player::SetValocity(float velocity)
 	mVelocity = velocity;
 }
 
-void Player::Move(const float deltaTime)
+void Player::RegisterExecutionFn()
 {
-	mPosition.x += mDirection.x * mVelocity * deltaTime;
-	mPosition.y += mDirection.y * mVelocity * deltaTime;
+	gGameFramework.GetKeyInput()->RegisterKeyFn(VK_LEFT, [=](float deltaTime)
+		{
+			MoveLeft(deltaTime);
+		}
+	);
+
+	gGameFramework.GetKeyInput()->RegisterKeyFn(VK_RIGHT, [=](float deltaTime)
+		{
+			MoveRight(deltaTime);
+		}
+	);
+
+	gGameFramework.GetKeyInput()->RegisterKeyFn(VK_UP, [=](float deltaTime)
+		{
+			MoveUp(deltaTime);
+		}
+	);
+
+	gGameFramework.GetKeyInput()->RegisterKeyFn(VK_DOWN, [=](float deltaTime)
+		{
+			MoveDown(deltaTime);
+		}
+	);
 }
 
-void Player::MoveLeft()
+void Player::MoveLeft(float deltaTime)
 {
-	mDirection.x += DIRECTIONS[LEFT].x;
-	mDirection.y += DIRECTIONS[LEFT].y;
+	mPosition.x -= mVelocity * deltaTime;
 }
 
-void Player::MoveUp()
+void Player::MoveUp(float deltaTime)
 {
-	mDirection.x += DIRECTIONS[UP].x;
-	mDirection.y += DIRECTIONS[UP].y;
+	mPosition.y -= mVelocity * deltaTime;
 }
 
-void Player::MoveRight()
+void Player::MoveRight(float deltaTime)
 {
-	mDirection.x += DIRECTIONS[RIGHT].x;
-	mDirection.y += DIRECTIONS[RIGHT].y;
+	mPosition.x += mVelocity * deltaTime;
 }
 
-void Player::MoveDown()
+void Player::MoveDown(float deltaTime)
 {
-	mDirection.x += DIRECTIONS[DOWN].x;
-	mDirection.y += DIRECTIONS[DOWN].y;
+	mPosition.y += mVelocity * deltaTime;
 }
 
 void Player::Update(const float deltaTime)
 {
-	std::shared_ptr<KeyInput> input = gGameFramework.GetKeyInput();
-
-	Move(deltaTime);
-
 	mShape->SetPosition(mPosition);
 }
 

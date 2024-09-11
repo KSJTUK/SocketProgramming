@@ -105,20 +105,14 @@ void ServerService::ProcessPacket(char* packet)
 	case PACKET_POSITION2D:
 		{
 			PacketPosition2D* position = reinterpret_cast<PacketPosition2D*>(packet);
-		}
+			gGameFramework.UpdateJoinedPlayer(senderId, { position->x, position->y });
+	}
 		break;
 
 	case PACKET_PLAYER_JOIN:
 		{
 			PacketPlayerJoin* joinedPlayer = reinterpret_cast<PacketPlayerJoin*>(packet);
 			gGameFramework.JoinOtherPlayer(senderId, new Player{ joinedPlayer->x, joinedPlayer->y });
-		}
-		break;
-
-	case PACKET_MOVE2D:
-		{
-			PacketMove2D* moveInfo = reinterpret_cast<PacketMove2D*>(packet);
-			gGameFramework.UpdateJoinedPlayer(senderId, { moveInfo->x, moveInfo->y }, moveInfo->velocity);
 		}
 		break;
 

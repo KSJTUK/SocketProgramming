@@ -88,10 +88,6 @@ void Client::ProcessPacket(char* packet)
 		BroadCasePacket<PacketPlayerExit>(PACKET_PLAYER_EXIT, senderId, packet);
 		break;
 
-	case PACKET_MOVE2D:
-		BroadCasePacket<PacketMove2D>(PACKET_MOVE2D, senderId, packet);
-		break;
-
 	case PACKET_PING:
 		Send<PacketPing>(PACKET_PING, packet);
 		break;

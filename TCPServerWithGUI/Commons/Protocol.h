@@ -23,7 +23,6 @@ enum {
 	PACKET_PLAYER_CONNECT,
 	PACKET_PLAYER_JOIN,
 	PACKET_PLAYER_EXIT,
-	PACKET_MOVE2D,
 };
 
 #pragma pack(push, 1)
@@ -53,9 +52,4 @@ struct PacketPosition2D : public PacketBase {
 	float y;
 };
 
-struct PacketMove2D : public PacketBase {
-	char x;
-	char y;
-	float velocity;
-};
 #pragma pack(pop)
