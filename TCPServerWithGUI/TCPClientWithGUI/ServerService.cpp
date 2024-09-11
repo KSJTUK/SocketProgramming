@@ -129,6 +129,12 @@ void ServerService::ProcessPacket(char* packet)
 		}
 		break;
 
+	case PACKET_PING:
+		{
+			gGameFramework.PingResult(reinterpret_cast<PacketPing*>(packet)->timeSent);
+		}
+		break;
+
 	default:
 		break;
 	}

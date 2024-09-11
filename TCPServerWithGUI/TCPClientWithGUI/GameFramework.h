@@ -13,6 +13,9 @@ class GameFramework {
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 public:
+	inline static std::atomic<unsigned long long> RECV_TIME_LATENCY = 0;
+
+public:
 	GameFramework();
 	~GameFramework();
 
@@ -32,6 +35,9 @@ public:
 	void JoinOtherPlayer(byte id, class Player* player);
 	void UpdateJoinedPlayer(byte id, Direction2D dir, float velocity);
 	void ExitPlayer(byte id);
+
+	// 핑에 대한 결과를 받는 함수
+	void PingResult(unsigned long long timeSent);
 
 	// Getter
 	HWND GetWindowHandle() const { return mWindowInfo.windowHandle; }

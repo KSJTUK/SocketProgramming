@@ -31,7 +31,9 @@
 #include "Protocol.h"
 #include "Random.h"
 
-inline constexpr byte NONE_CLIENT_ID = 0xFF;
+using namespace std::literals;
+
+inline constexpr byte NULL_CLIENT_ID = 0xFF;
 inline constexpr SIZE WORLD_SIZE = { 1920 * 2, 1080 * 2 };
 
 struct WindowInfo {

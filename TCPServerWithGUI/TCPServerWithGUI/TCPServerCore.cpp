@@ -38,7 +38,7 @@ void TCPServerCore::StartAccept()
                 byte id = addedId;
                 Client& client = mClients[id];
 
-                client.Send<PacketPlayerConnect>(PACKET_PLAYER_CONNECT, id);
+                client.Send<PacketPlayerConnect>(PACKET_PLAYER_CONNECT);
 
                 client.Recv();
             

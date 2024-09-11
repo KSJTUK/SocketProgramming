@@ -39,7 +39,7 @@ public:
 	template<typename PacketType, typename... Args> requires std::is_base_of_v<PacketBase, PacketType>
 	void Send(byte type, Args&&... args)
 	{
-		PacketType packet{ sizeof(PacketType), type, (args)... };
+		PacketType packet{ sizeof(PacketType), type, GetId(), (args)...};
 		::send(
 			mSocket,
 			reinterpret_cast<char*>(&packet),

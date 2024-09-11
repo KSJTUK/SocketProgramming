@@ -19,7 +19,7 @@ public:
 	~ServerService();
 
 public:
-	byte GetId() const { return mId; }
+	byte GetId() const volatile { return mId; }
 
 	// 서버와 연결설정, 수신 쓰레드 생성하는 함수
 	bool ConnectToServer();
@@ -33,7 +33,7 @@ public:
 	template<typename PacketType, typename... Args> requires std::is_base_of_v<PacketBase, PacketType>
 	void Send(byte type, Args&&... args)
 	{
-		PacketType packet{ sizeof(PacketType), type, mId, (args)... };
+		PacketType packet{ sizeof(PacketType), type, mId, (args)...};
 		::send(
 			mSocket,
 			reinterpret_cast<char*>(&packet),

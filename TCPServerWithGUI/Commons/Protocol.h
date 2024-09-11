@@ -19,6 +19,7 @@ using byte = unsigned char;
 
 enum {
 	PACKET_POSITION2D = 0,
+	PACKET_PING,
 	PACKET_PLAYER_CONNECT,
 	PACKET_PLAYER_JOIN,
 	PACKET_PLAYER_EXIT,
@@ -30,6 +31,10 @@ struct PacketBase {
 	byte size;
 	byte type;
 	byte senderId;
+};
+
+struct PacketPing : public PacketBase {
+	unsigned long long timeSent;
 };
 
 struct PacketPlayerConnect : public PacketBase {

@@ -15,8 +15,10 @@ public:
 public:
 	void SetCameraPosition(Position cameraPosition);
 	Position GetCameraPosition() const;
+	std::pair<LONG, LONG> GetCameraLeftTop() const;
 	HDC GetMemDC() const;
 
+	void DrawString(std::string_view str, int x, int y);
 	void CleanupBuffer();
 	void CopyBufferMemToMain();
 

@@ -80,11 +80,8 @@ bool GameFramework::Init(HINSTANCE instanceHandle)
     mServerService->CreateRecvThread();
 
     // 서버에 접속했다면 자신의 id를 부여받을 때까지 대기
-    // 릴리즈모드에서의 컴파일러 최적화 때문에 따로 volatile 변수를 만들어 검사
-    volatile byte issuedId = mServerService->GetId();
-    while (issuedId == NONE_CLIENT_ID) {
-        issuedId = mServerService->GetId();
-    }
+    // 릴리즈모드에서의 컴파일러 최적화 때문에 volatile 함수로 설계
+    while (NULL_CLIENT_ID == mServerService->GetId());
 
     // 최초 접속시 자신의 위치를 다른 클라이언트에게 알리기위해 서버에 전송
     auto [playerX, playerY] = mPlayer->GetPosition();
@@ -157,6 +154,12 @@ void GameFramework::ExitPlayer(byte id)
     }
 }
 
+void GameFramework::PingResult(unsigned long long timeSent)
+{
+    volatile unsigned long long latency = (GetTickCount64() - timeSent) / 2;
+    RECV_TIME_LATENCY.store(latency);
+}
+
 std::shared_ptr<KeyInput> GameFramework::GetKeyInput() const
 {
     return mKeyInput;
@@ -172,11 +175,12 @@ void GameFramework::OnProcessingMouse(HWND hWnd, UINT message, WPARAM wParam, LP
 {
     switch (message) {
     case WM_LBUTTONUP:
-        // 왼쪽 버튼을 누르고 떼면 점 생성 + 점 위치 서버로 보내기
+        // 왼쪽 버튼을 누르고 떼면 점 생성 + 점 위치 서버로 보내기, 점위치 또한 카메라 위치를 기준으로 계산
         ReleaseCapture();
         {
-            float x = static_cast<float>(LOWORD(lParam));
-            float y = static_cast<float>(HIWORD(lParam));
+            auto [cameraLeft, cameraTop] = mDrawBuffer->GetCameraLeftTop();
+            float x = cameraLeft + static_cast<float>(LOWORD(lParam));
+            float y = cameraTop + static_cast<float>(HIWORD(lParam));
             mServerService->Send<PacketPosition2D>(PACKET_POSITION2D, x, y);
             AddShape(new PointShape{ x, y, mDrawBuffer});
         }
@@ -215,6 +219,8 @@ void GameFramework::Update()
         mKeyInput->Input();
     }
 
+    mServerService->Send<PacketPing>(PACKET_PING, GetTickCount64());
+
     mPlayer->Update();
     mDrawBuffer->SetCameraPosition(mPlayer->GetPosition());
 
@@ -229,6 +235,7 @@ void GameFramework::Update()
 void GameFramework::Render()
 {
     mDrawBuffer->CleanupBuffer();
+    mDrawBuffer->DrawString(std::to_string(RECV_TIME_LATENCY) + "ms"s, 10, 20);
 
     // Rendering
     for (auto& shape : mDrawTestShapes) {
@@ -258,8 +265,8 @@ void GameFramework::CreateMyWindow()
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT,
         0,
-        1280,
-        720,
+        800,
+        600,
         nullptr,
         nullptr,
         mInstanceHandle,
