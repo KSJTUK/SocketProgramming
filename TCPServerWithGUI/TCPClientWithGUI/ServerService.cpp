@@ -105,7 +105,6 @@ void ServerService::ProcessPacket(char* packet)
 	case PACKET_POSITION2D:
 		{
 			PacketPosition2D* position = reinterpret_cast<PacketPosition2D*>(packet);
-			gGameFramework.AddShape(new PointShape{ position->x, position->y, gGameFramework.GetDrawBuffer() });
 		}
 		break;
 

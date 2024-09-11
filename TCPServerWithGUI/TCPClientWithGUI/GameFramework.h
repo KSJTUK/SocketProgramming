@@ -29,7 +29,6 @@ public:
 
 	// 그리기에 필요한 객체들을 생성하는 함수
 	void CreateObjects();
-	void AddShape(class Shape* shape);
 
 	// 다른 플레이어 접속, 퇴장, 업데이트 처리
 	void JoinOtherPlayer(byte id, class Player* player);
@@ -37,7 +36,7 @@ public:
 	void ExitPlayer(byte id);
 
 	// 핑에 대한 결과를 받는 함수
-	void PingResult(unsigned long long timeSent);
+	void PingResult(std::chrono::high_resolution_clock::time_point timeSent);
 
 	// Getter
 	HWND GetWindowHandle() const { return mWindowInfo.windowHandle; }
@@ -71,6 +70,9 @@ private:
 	std::wstring	mWindowName{ L"GUI 클라이언트" };
 	std::wstring	mWindowClassName{ L"GUI 클라이언트" };
 
+	// 타이머
+	std::unique_ptr<class Timer> mTimer{ };
+
 	// 렌더링 처리
 	std::shared_ptr<class DrawBuffer> mDrawBuffer{ };
 
@@ -83,5 +85,4 @@ private:
 	// draw test
 	std::unique_ptr<class Player> mPlayer{ };
 	std::unordered_map<byte, std::unique_ptr<class Player>> mOtherPlayers{ };
-	std::list<std::unique_ptr<class Shape>> mDrawTestShapes{ };
 };

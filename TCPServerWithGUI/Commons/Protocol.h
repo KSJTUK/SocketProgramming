@@ -34,7 +34,7 @@ struct PacketBase {
 };
 
 struct PacketPing : public PacketBase {
-	unsigned long long timeSent;
+	std::chrono::steady_clock::time_point timeSent;
 };
 
 struct PacketPlayerConnect : public PacketBase {

@@ -3,6 +3,7 @@
 #include "Resource.h"
 #include "ServerService.h"
 
+#include "Timer.h"
 #include "Input.h"
 #include "DrawBuffer.h"
 #include "Shape.h"
@@ -97,9 +98,9 @@ void GameFramework::Destroy()
     // TODO
     mServerService->Join();
 
+    mTimer.reset();
     mServerService.reset();
     mDrawBuffer.reset();
-    mDrawTestShapes.clear();
 }
 
 void GameFramework::SetKeyboardFocuse(bool focused)
@@ -115,21 +116,21 @@ void GameFramework::SetMouseCapture(bool captured)
 // 그리기에 필요한 객체들을 생성하는 함수
 void GameFramework::CreateObjects()
 {
+    // shared_ptr
     mKeyInput = std::make_shared<KeyInput>();
-    mServerService = std::make_unique<ServerService>();
     mDrawBuffer = std::make_shared<DrawBuffer>(mWindowInfo);
 
+    // unique_ptr
+    mTimer = std::make_unique<Timer>();
+    mServerService = std::make_unique<ServerService>();
     mPlayer = std::make_unique<Player>(true);
+
+    // 플레이어의 시작 위치를 랜덤하게 지정
     auto [minX, minY, maxX, maxY] = mWindowInfo.windowRect;
     mPlayer->SetPosition(
         static_cast<float>(Random::GetUniformRandom(minX, maxX)),
         static_cast<float>(Random::GetUniformRandom(minY, maxY))
     );
-}
-
-void GameFramework::AddShape(Shape* shape)
-{
-    mDrawTestShapes.emplace_back(shape);
 }
 
 void GameFramework::JoinOtherPlayer(byte id, Player* player)
@@ -154,9 +155,9 @@ void GameFramework::ExitPlayer(byte id)
     }
 }
 
-void GameFramework::PingResult(unsigned long long timeSent)
+void GameFramework::PingResult(Timer::TimePoint timeSent)
 {
-    volatile unsigned long long latency = (GetTickCount64() - timeSent) / 2;
+    volatile unsigned long long latency = std::chrono::duration_cast<std::chrono::milliseconds>(mTimer->GetCurrentTick() - timeSent).count() / 2;
     RECV_TIME_LATENCY.store(latency);
 }
 
@@ -177,13 +178,6 @@ void GameFramework::OnProcessingMouse(HWND hWnd, UINT message, WPARAM wParam, LP
     case WM_LBUTTONUP:
         // 왼쪽 버튼을 누르고 떼면 점 생성 + 점 위치 서버로 보내기, 점위치 또한 카메라 위치를 기준으로 계산
         ReleaseCapture();
-        {
-            auto [cameraLeft, cameraTop] = mDrawBuffer->GetCameraLeftTop();
-            float x = cameraLeft + static_cast<float>(LOWORD(lParam));
-            float y = cameraTop + static_cast<float>(HIWORD(lParam));
-            mServerService->Send<PacketPosition2D>(PACKET_POSITION2D, x, y);
-            AddShape(new PointShape{ x, y, mDrawBuffer});
-        }
         break;
 
     case WM_LBUTTONDOWN:
@@ -218,8 +212,9 @@ void GameFramework::Update()
     if (mKeyboardFocused) {
         mKeyInput->Input();
     }
+    mTimer->Update();
 
-    mServerService->Send<PacketPing>(PACKET_PING, GetTickCount64());
+    mServerService->Send<PacketPing>(PACKET_PING, mTimer->GetCurrentTick());
 
     mPlayer->Update();
     mDrawBuffer->SetCameraPosition(mPlayer->GetPosition());
@@ -235,12 +230,9 @@ void GameFramework::Update()
 void GameFramework::Render()
 {
     mDrawBuffer->CleanupBuffer();
-    mDrawBuffer->DrawString(std::to_string(RECV_TIME_LATENCY) + "ms"s, 10, 20);
-
-    // Rendering
-    for (auto& shape : mDrawTestShapes) {
-        shape->Render();
-    }
+    mDrawBuffer->DrawString("FPS: "s + std::to_string(mTimer->GetFPS()), 10, 20);
+    mDrawBuffer->DrawString("Delta Time: "s + std::to_string(mTimer->GetDeltaTime()) + "s"s, 10, 50);
+    mDrawBuffer->DrawString("지연률"s + std::to_string(RECV_TIME_LATENCY) + "ms"s, 10, 80);
 
     for (auto& [id, otherPlayer] : mOtherPlayers) {
         otherPlayer->Render();

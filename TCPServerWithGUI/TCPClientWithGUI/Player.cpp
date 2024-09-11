@@ -95,39 +95,6 @@ void Player::MoveDown()
 void Player::Update()
 {
 	std::shared_ptr<KeyInput> input = gGameFramework.GetKeyInput();
-	if (mPlayable) {
-		if ((*input)[VK_LEFT].down) {
-			mDirection.x -= 1;
-		}
-
-		if ((*input)[VK_LEFT].up) {
-			mDirection.x += 1;
-		}
-
-		if ((*input)[VK_RIGHT].down) {
-			mDirection.x += 1;
-		}
-
-		if ((*input)[VK_RIGHT].up) {
-			mDirection.x -= 1;
-		}
-
-		if ((*input)[VK_UP].down) {
-			mDirection.y -= 1;
-		}
-
-		if ((*input)[VK_UP].up) {
-			mDirection.y += 1;
-		}
-
-		if ((*input)[VK_DOWN].down) {
-			mDirection.y += 1;
-		}
-
-		if ((*input)[VK_DOWN].up) {
-			mDirection.y -= 1;
-		}
-	}
 
 	Move();
 

@@ -22,7 +22,6 @@ DrawBuffer::~DrawBuffer()
 
 void DrawBuffer::SetCameraPosition(Position cameraPosition)
 {
-	CleanupBuffer();
 	mCameraPosition = cameraPosition;
 }
 
@@ -53,8 +52,9 @@ void DrawBuffer::DrawString(std::string_view str, int x, int y)
 
 void DrawBuffer::CleanupBuffer()
 {
-	RECT worldRect{ 0, 0, WORLD_SIZE.cx, WORLD_SIZE.cy };
-	FillRect(mMemDC, &worldRect, (HBRUSH)GetStockObject(BLACK_BRUSH));
+	HBRUSH oldBrush = (HBRUSH)SelectObject(mMemDC, (HBRUSH)GetStockObject(BLACK_BRUSH));
+	Rectangle(mMemDC, 0, 0, WORLD_SIZE.cx, WORLD_SIZE.cy);
+	SelectObject(mMemDC, oldBrush);
 }
 
 // 백버퍼 픽셀 초기화
