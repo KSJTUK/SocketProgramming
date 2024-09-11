@@ -15,13 +15,15 @@ class Player {
 		{ 0, 1}, /* DOWN */
 	};
 
-	inline static constexpr unsigned int DEFAUT_SIZE = 40;
 	enum {
 		LEFT,
 		UP,
 		RIGHT,
 		DOWN
 	};
+
+	inline static constexpr unsigned int DEFAUT_SIZE = 40;
+	inline static constexpr float DEFAULT_SPEED = 30.0f;
 
 public:
 	Player();
@@ -44,13 +46,13 @@ public:
 	float GetVelocity() const { return mVelocity; }
 
 	// 
-	void Move();
+	void Move(const float deltaTime);
 	void MoveLeft();
 	void MoveUp();
 	void MoveRight();
 	void MoveDown();
 
-	void Update();
+	void Update(const float deltaTime);
 	void Render();
 
 private:

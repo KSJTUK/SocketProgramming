@@ -24,20 +24,19 @@
 
 namespace Address {
 	struct NetHostInfo {
-		std::string ip;
+		char ip[INET_ADDRSTRLEN]{ };
 		unsigned short port;
 	};
 
 	inline NetHostInfo GetHostInfo(SOCKET socket)
 	{
 		NetHostInfo hostInfo{ };
-		hostInfo.ip.reserve(INET_ADDRSTRLEN);
 
 		sockaddr_in address;
 		int addressLength{ sizeof(sockaddr_in) };
 		::getpeername(socket, reinterpret_cast<sockaddr*>(&address), &addressLength);
 
-		::inet_ntop(AF_INET, &address.sin_addr, hostInfo.ip.data(), INET_ADDRSTRLEN);
+		::inet_ntop(AF_INET, &address.sin_addr, hostInfo.ip, INET_ADDRSTRLEN);
 		hostInfo.port = ::ntohs(address.sin_port);
 
 		return hostInfo;

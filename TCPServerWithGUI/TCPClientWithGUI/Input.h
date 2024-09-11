@@ -12,7 +12,7 @@ public:
 public:
     void Input() 
     {
-        GetKeyboardState(mKeyInfo);
+        bool result = GetKeyboardState(mKeyInfo);
     }
 
     void Reset() 

@@ -8,14 +8,14 @@
 Player::Player()
 	: mPosition{ Random::GetUniformRandom(10.f, 1000.f), Random::GetUniformRandom(10.f, 800.f) },
 	mShape{ std::make_unique<Square>(mPosition, DEFAUT_SIZE, DEFAUT_SIZE, gGameFramework.GetDrawBuffer()) },
-	mVelocity{ 0.3f }
+	mVelocity{ DEFAULT_SPEED }
 {
 }
 
 Player::Player(bool playable)
 	: mPosition{ Random::GetUniformRandom(10.f, 1000.f), Random::GetUniformRandom(10.f, 800.f) },
 	mShape{ std::make_unique<Square>(mPosition, DEFAUT_SIZE, DEFAUT_SIZE, gGameFramework.GetDrawBuffer()) },
-	mVelocity{ 0.3f },
+	mVelocity{ DEFAULT_SPEED },
 	mPlayable{ playable }
 {
 }
@@ -23,14 +23,14 @@ Player::Player(bool playable)
 Player::Player(float x, float y)
 	: mPosition{ x, y },
 	mShape{ std::make_unique<Square>(mPosition, DEFAUT_SIZE, DEFAUT_SIZE, gGameFramework.GetDrawBuffer()) },
-	mVelocity{ 0.3f }
+	mVelocity{ DEFAULT_SPEED }
 {
 }
 
 Player::Player(float x, float y, bool playable)
 	: mPosition{ x, y },
 	mShape{ std::make_unique<Square>(mPosition, DEFAUT_SIZE, DEFAUT_SIZE, gGameFramework.GetDrawBuffer()) },
-	mVelocity{ 0.3f },
+	mVelocity{ DEFAULT_SPEED },
 	mPlayable{ playable }
 {
 }
@@ -62,10 +62,10 @@ void Player::SetValocity(float velocity)
 	mVelocity = velocity;
 }
 
-void Player::Move()
+void Player::Move(const float deltaTime)
 {
-	mPosition.x += mDirection.x * mVelocity;
-	mPosition.y += mDirection.y * mVelocity;
+	mPosition.x += mDirection.x * mVelocity * deltaTime;
+	mPosition.y += mDirection.y * mVelocity * deltaTime;
 }
 
 void Player::MoveLeft()
@@ -92,11 +92,11 @@ void Player::MoveDown()
 	mDirection.y += DIRECTIONS[DOWN].y;
 }
 
-void Player::Update()
+void Player::Update(const float deltaTime)
 {
 	std::shared_ptr<KeyInput> input = gGameFramework.GetKeyInput();
 
-	Move();
+	Move(deltaTime);
 
 	mShape->SetPosition(mPosition);
 }

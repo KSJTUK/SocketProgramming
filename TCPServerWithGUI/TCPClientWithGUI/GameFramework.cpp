@@ -157,7 +157,7 @@ void GameFramework::ExitPlayer(byte id)
 
 void GameFramework::PingResult(Timer::TimePoint timeSent)
 {
-    volatile unsigned long long latency = std::chrono::duration_cast<std::chrono::milliseconds>(mTimer->GetCurrentTick() - timeSent).count() / 2;
+    unsigned long long latency = std::chrono::duration_cast<std::chrono::milliseconds>(mTimer->GetCurrentTick() - timeSent).count() / 2;
     RECV_TIME_LATENCY.store(latency);
 }
 
@@ -213,17 +213,18 @@ void GameFramework::Update()
         mKeyInput->Input();
     }
     mTimer->Update();
+    const float deltaTime = mTimer->GetDeltaTime();
 
     mServerService->Send<PacketPing>(PACKET_PING, mTimer->GetCurrentTick());
 
-    mPlayer->Update();
+    mPlayer->Update(deltaTime);
     mDrawBuffer->SetCameraPosition(mPlayer->GetPosition());
 
     auto [dirX, dirY] = mPlayer->GetDirection();
     mServerService->Send<PacketMove2D>(PACKET_MOVE2D, dirX, dirY, mPlayer->GetVelocity());
 
     for (auto& [id, otherPlayer] : mOtherPlayers) {
-        otherPlayer->Update();
+        otherPlayer->Update(deltaTime);
     }
 }
 
