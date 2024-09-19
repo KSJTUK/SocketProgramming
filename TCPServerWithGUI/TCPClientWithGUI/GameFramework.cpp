@@ -152,15 +152,16 @@ void GameFramework::UpdateJoinedPlayer(byte id, Position pos)
 
 void GameFramework::ExitPlayer(byte id)
 {
+    // Exit 패킷이 오는 경우 해당 id 플레이어가 존재하는지 확인 후 지운다.
     if (mOtherPlayers.contains(id)) {
         mOtherPlayers.erase(id);
     }
 }
 
-void GameFramework::PingResult(Timer::TimePoint timeSent)
+void GameFramework::PingResult(std::chrono::high_resolution_clock::time_point timeSent)
 {
     unsigned long long latency = std::chrono::duration_cast<std::chrono::milliseconds>(mTimer->GetCurrentTick() - timeSent).count() / 2;
-    RECV_TIME_LATENCY.store(latency);
+    mRecvTimeLatency.store(latency);
 }
 
 std::shared_ptr<KeyInput> GameFramework::GetKeyInput() const
@@ -234,9 +235,12 @@ void GameFramework::Update()
 void GameFramework::Render()
 {
     mDrawBuffer->CleanupBuffer();
-    mDrawBuffer->DrawString("FPS: "s + std::to_string(mTimer->GetFPS()), 10, 20);
+
+    gGameFramework.GetDrawBuffer()->DrawString(std::to_string(mTimer->GetFPS()), 10, 50);
+
+    mDrawBuffer->DrawString(std::to_string(mTimer->GetFPS()), 10, 20);
     mDrawBuffer->DrawString("Delta Time: "s + std::to_string(mTimer->GetDeltaTime()) + "s"s, 10, 50);
-    mDrawBuffer->DrawString("지연률"s + std::to_string(RECV_TIME_LATENCY) + "ms"s, 10, 80);
+    mDrawBuffer->DrawString("지연률"s + std::to_string(mRecvTimeLatency) + "ms"s, 10, 80);
 
     for (auto& [id, otherPlayer] : mOtherPlayers) {
         otherPlayer->Render();

@@ -27,6 +27,7 @@ private:
 	HDC mMainFrameDC{ };
 	HDC mMemDC{ };
 	HBITMAP mMemBmp{ };
+	RECT mValidBufferRect{ 0, 0, WORLD_SIZE.cx, WORLD_SIZE.cy };
 	Position mCameraPosition{ };
 };
 

@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "Timer.h"
+#include "GameFramework.h"
+#include "DrawBuffer.h"
 
 /* ----------------------------------------
 * 
@@ -18,6 +20,8 @@ Timer::~Timer()
 
 void Timer::Update()
 {
+	++mFpsCount;
+
 	TimePoint current = Clock::now();
 
 	mDeltaTime = std::chrono::duration<TimeType>(current - mPrev).count();
@@ -31,10 +35,7 @@ void Timer::Update()
 
 		mFrameCounter = 0;
 		mFpsCount = 0;
-		return;
 	}
-
-	++mFpsCount;
 }
 
 int Timer::GetFPS() const

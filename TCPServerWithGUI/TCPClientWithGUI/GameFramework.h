@@ -13,7 +13,7 @@ class GameFramework {
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 public:
-	inline static std::atomic<unsigned long long> RECV_TIME_LATENCY = 0;
+	inline static std::atomic<unsigned long long> mRecvTimeLatency = 0;
 
 public:
 	GameFramework();

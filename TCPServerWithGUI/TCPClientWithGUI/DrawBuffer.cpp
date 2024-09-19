@@ -23,6 +23,10 @@ DrawBuffer::~DrawBuffer()
 void DrawBuffer::SetCameraPosition(Position cameraPosition)
 {
 	mCameraPosition = cameraPosition;
+
+	// 카메라 위치를 기준으로 복사할 월드의 영역을 설정
+	auto [left, top] = GetCameraLeftTop();
+	mValidBufferRect = { left, top, left + mWindowInfo.windowRect.right, top + mWindowInfo.windowRect.bottom };
 }
 
 Position DrawBuffer::GetCameraPosition() const
@@ -52,9 +56,7 @@ void DrawBuffer::DrawString(std::string_view str, int x, int y)
 
 void DrawBuffer::CleanupBuffer()
 {
-	HBRUSH oldBrush = (HBRUSH)SelectObject(mMemDC, (HBRUSH)GetStockObject(BLACK_BRUSH));
-	Rectangle(mMemDC, 0, 0, WORLD_SIZE.cx, WORLD_SIZE.cy);
-	SelectObject(mMemDC, oldBrush);
+	FillRect(mMemDC, &mValidBufferRect, (HBRUSH)GetStockObject(WHITE_BRUSH));
 }
 
 // 백버퍼 픽셀 초기화
