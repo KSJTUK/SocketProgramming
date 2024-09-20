@@ -8,7 +8,7 @@
 
 class Player {
 	inline static constexpr unsigned int DEFAUT_SIZE = 40;
-	inline static constexpr float DEFAULT_SPEED = 30.0f;
+	inline static constexpr float DEFAULT_SPEED = 300.0f;
 
 public:
 	Player();

@@ -19,6 +19,7 @@
 #include "Macros.h"
 #include "Random.h"
 #include "Protocol.h"
+#include "Endian.h"
 
 #include "TCPServerCore.h"
 

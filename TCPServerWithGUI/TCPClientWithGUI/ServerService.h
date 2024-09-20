@@ -33,7 +33,8 @@ public:
 	template<typename PacketType, typename... Args> requires std::is_base_of_v<PacketBase, PacketType>
 	void Send(byte type, Args&&... args)
 	{
-		PacketType packet{ sizeof(PacketType), type, mId, (args)...};
+		PacketType packet{ sizeof(PacketType), type, mId, (args)... };
+
 		::send(
 			mSocket,
 			reinterpret_cast<char*>(&packet),
@@ -50,9 +51,9 @@ private:
 	SOCKET mSocket{ INVALID_SOCKET };
 	std::thread mRecvThread{ };
 
+	char mRecvBuffer[RECV_SIZE]{ };
+
 	byte mId{ 0xFF };
 	volatile bool mRecvThreadRunning{ true };
-
-	char mRecvBuffer[RECV_SIZE]{ };
 };
 

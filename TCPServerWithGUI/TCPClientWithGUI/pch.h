@@ -20,6 +20,7 @@
 #include <cstdlib>
 #include <string>
 #include <memory>
+#include <fstream>
 #include <list>
 #include <unordered_map>
 
@@ -30,11 +31,12 @@
 #include "Macros.h"
 #include "Protocol.h"
 #include "Random.h"
+#include "Endian.h"
 
 using namespace std::literals;
 
 inline constexpr byte NULL_CLIENT_ID = 0xFF;
-inline constexpr SIZE WORLD_SIZE = { 1920 * 2, 1080 * 2 };
+inline constexpr SIZE WORLD_SIZE = { 5000, 5000 };
 
 struct WindowInfo {
 	HWND windowHandle;

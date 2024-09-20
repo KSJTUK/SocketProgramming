@@ -134,6 +134,8 @@ void GameFramework::CreateObjects()
         static_cast<float>(Random::GetUniformRandom(minX, maxX)),
         static_cast<float>(Random::GetUniformRandom(minY, maxY))
     );
+
+    CreatePointsFromFile();
 }
 
 void GameFramework::JoinOtherPlayer(byte id, Player* player)
@@ -172,6 +174,25 @@ std::shared_ptr<KeyInput> GameFramework::GetKeyInput() const
 std::shared_ptr<DrawBuffer> GameFramework::GetDrawBuffer() const
 {
     return mDrawBuffer;
+}
+
+void GameFramework::CreatePointsFromFile()
+{
+    std::ifstream in{ "Entities.bin", std::ios::binary };
+    if (not in) {
+        return;
+    }
+
+    size_t numOfPoints{ };
+    in.read(reinterpret_cast<char*>(&numOfPoints), sizeof(size_t));
+
+    std::vector<Position> positions(numOfPoints);
+    in.read(reinterpret_cast<char*>(positions.data()), numOfPoints * sizeof(Position));
+
+    mShapes.reserve(numOfPoints);
+    for (const auto& position : positions) {
+        mShapes.emplace_back(std::make_unique<Square>(position, 5, 5, mDrawBuffer));
+    }
 }
 
 // 마우스 메시지 처리 함수
@@ -244,6 +265,10 @@ void GameFramework::Render()
 
     for (auto& [id, otherPlayer] : mOtherPlayers) {
         otherPlayer->Render();
+    }
+
+    for (auto& shape : mShapes) {
+        shape->Render();
     }
 
     mPlayer->Render();

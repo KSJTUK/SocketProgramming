@@ -51,7 +51,7 @@ void TCPServerCore::StartAccept()
 void TCPServerCore::Init()
 {
     WSAData wsaData;
-    ASSERT_CRASH(0 == ::WSAStartup(MAKEWORD(2, 2), &wsaData), "WSAStartup Failure");
+    ASSERT(0 == ::WSAStartup(MAKEWORD(2, 2), &wsaData), "WSAStartup Failure");
 
     CreateCoreObjects();
     StartAccept();

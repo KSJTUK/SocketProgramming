@@ -51,7 +51,7 @@ PointShape::PointShape(Position position, std::shared_ptr<DrawBuffer> drawBuffer
 void PointShape::Render()
 {
 	auto [x, y] = GetPosition();
-	SetPixel(mDrawBuffer->GetMemDC(), (int)x, (int)y, RGB(255, 255, 255));
+	SetPixel(mDrawBuffer->GetMemDC(), (int)x, (int)y, RGB(0, 0, 0));
 }
 
 /* ----------------------------------------

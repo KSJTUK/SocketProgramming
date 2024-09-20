@@ -43,6 +43,9 @@ public:
 	std::shared_ptr<class KeyInput> GetKeyInput() const;
 	std::shared_ptr<class DrawBuffer> GetDrawBuffer() const;
 
+	// 장애물들 생성
+	void CreatePointsFromFile();
+
 	// 윈도우 메시지 처리
 	void OnProcessingMouse(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	void OnProcessingKeyboard(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -85,4 +88,5 @@ private:
 	// draw test
 	std::unique_ptr<class Player> mPlayer{ };
 	std::unordered_map<byte, std::unique_ptr<class Player>> mOtherPlayers{ };
+	std::vector<std::unique_ptr<class Shape>> mShapes;
 };

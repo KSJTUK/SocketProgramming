@@ -37,7 +37,7 @@ inline void* GetErrorMessage()
 	*crash = 0xFFFFFFFF;											\
 }
 
-#define ASSERT_CRASH(expr, cause)									\
+#define ASSERT(expr, cause)									        \
 {																	\
 	if (not (expr)) {												\
 		Crash(cause);												\

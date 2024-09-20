@@ -6,8 +6,12 @@
 *
 ----------------------------------*/
 
+#include <chrono>
+#include "Endian.h"
+
 #define USE_LOOP_BACK 1
 
+// 인라인 상수 정의
 #if USE_LOOP_BACK
 inline constexpr const char* SERVER_IP = "127.0.0.1";
 #else

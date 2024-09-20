@@ -13,10 +13,10 @@
 ServerService::ServerService()
 {
 	WSAData wsaData;
-	ASSERT_CRASH(0 == ::WSAStartup(MAKEWORD(2, 2), &wsaData), "WSAStartup Failure");
+	ASSERT(0 == ::WSAStartup(MAKEWORD(2, 2), &wsaData), "WSAStartup Failure");
 
 	mSocket = ::socket(AF_INET, SOCK_STREAM, 0);
-	ASSERT_CRASH(INVALID_SOCKET != mSocket, "Socket is not Created");
+	ASSERT(INVALID_SOCKET != mSocket, "Socket is not Created");
 }
 
 ServerService::~ServerService() = default;
