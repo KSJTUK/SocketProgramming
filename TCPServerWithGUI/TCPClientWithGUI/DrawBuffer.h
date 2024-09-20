@@ -18,6 +18,8 @@ public:
 	std::pair<LONG, LONG> GetCameraLeftTop() const;
 	HDC GetMemDC() const;
 
+	bool IsInCamera(Position objectPos) const;
+
 	void DrawString(std::string_view str, int x, int y);
 	void CleanupBuffer();
 	void CopyBufferMemToMain();

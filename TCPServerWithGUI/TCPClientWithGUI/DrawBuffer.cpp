@@ -48,6 +48,12 @@ HDC DrawBuffer::GetMemDC() const
 	return mMemDC;
 }
 
+bool DrawBuffer::IsInCamera(Position objectPos) const
+{
+	return (mValidBufferRect.left <= objectPos.x and mValidBufferRect.right >= objectPos.x) and /* check in X */
+		(mValidBufferRect.top <= objectPos.y and mValidBufferRect.bottom >= objectPos.y);		/* check in Y */
+}
+
 void DrawBuffer::DrawString(std::string_view str, int x, int y)
 {
 	auto [cameraLeft, cameraTop] = GetCameraLeftTop();

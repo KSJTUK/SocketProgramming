@@ -50,6 +50,10 @@ PointShape::PointShape(Position position, std::shared_ptr<DrawBuffer> drawBuffer
 
 void PointShape::Render()
 {
+	if (not mDrawBuffer->IsInCamera(GetPosition())) {
+		return;
+	}
+
 	auto [x, y] = GetPosition();
 	SetPixel(mDrawBuffer->GetMemDC(), (int)x, (int)y, RGB(0, 0, 0));
 }
@@ -88,6 +92,10 @@ Square::~Square() = default;
 
 void Square::Render()
 {
+	if (not mDrawBuffer->IsInCamera(GetPosition())) {
+		return;
+	}
+
 	auto [x, y] = GetPosition();
 	Rectangle(
 		mDrawBuffer->GetMemDC(),
