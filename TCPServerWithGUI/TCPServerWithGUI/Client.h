@@ -60,6 +60,7 @@ public:
 
 	void Join(SOCKET clientSocket, byte id);
 	void Exit();
+	void CloseSocket();
 
 	void Recv();
 
@@ -68,12 +69,19 @@ public:
 	void Send(byte type, Args&&... args)
 	{
 		PacketType packet{ sizeof(PacketType), type, GetId(), (args)...};
-		::send(
+		int result = ::send(
 			mSocket,
 			reinterpret_cast<char*>(&packet),
 			packet.size,
 			0
 		);
+
+		if (result == SOCKET_ERROR) {
+			gIOLock.lock();
+			std::cout << "err" << (int)GetId() << std::endl;
+			std::cout << GetErrorString() << std::endl;
+			gIOLock.unlock();
+		}
 	}
 
 	template <typename PacketType> requires std::is_base_of_v<PacketBase, PacketType>
@@ -84,23 +92,37 @@ public:
 		packet.size = sizeof(PacketType);
 		packet.type = type;
 
-		::send(
+		int result = ::send(
 			mSocket,
 			reinterpret_cast<char*>(&packet),
 			packet.size,
 			0
 		);
+
+		if (result == SOCKET_ERROR) {
+			gIOLock.lock();
+			std::cout << "err" << (int)GetId() << std::endl;
+			std::cout << GetErrorString() << std::endl;
+			gIOLock.unlock();
+		}
 	}
 
 	// 같은 패킷을 보내는 경우 계속해서 만들필요는 없음.
 	void Send(PacketBase* packet)
 	{
-		::send(
+		int result = ::send(
 			mSocket,
 			reinterpret_cast<char*>(packet),
 			packet->size,
 			0
 		);
+
+		if (result == SOCKET_ERROR) {
+			gIOLock.lock();
+			std::cout << "err" << (int)GetId() << std::endl;
+			std::cout << GetErrorString() << std::endl;
+			gIOLock.unlock();
+		}
 	}
 
 private:
@@ -112,9 +134,6 @@ private:
 	Address::NetHostInfo mHostInfo{ };
 	char mRecvBuffer[RECV_SIZE]{ };
 	byte mRemainByte{ };
-	CLIENT_STATE mClientState{ CLIENT_STATE::EXITED };
 
-#if NETWORK_DEBUG
-	std::mutex mIOLock{ };
-#endif
+	CLIENT_STATE mClientState{ CLIENT_STATE::EXITED };
 };

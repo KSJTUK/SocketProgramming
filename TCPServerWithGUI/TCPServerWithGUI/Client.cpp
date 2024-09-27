@@ -18,7 +18,8 @@ Client::Client()
 
 Client::Client(Client&& other) noexcept
 	: mSocket{ other.mSocket },
-	mHostInfo{ std::move(other.mHostInfo) }
+	mHostInfo{ std::move(other.mHostInfo) },
+	mSession{ std::make_unique<ClientSession>() }
 {
 }
 
@@ -40,12 +41,21 @@ void Client::Join(SOCKET clientSocket, byte id)
 {
 	mSocket = clientSocket;
 	mSession->SetId(id);
+	mClientState = CLIENT_STATE::JOINED;
 }
 
 void Client::Exit()
 {
 	mSession->SetId(NULL_CLIENT_ID);
 	mClientState = CLIENT_STATE::EXITED;
+}
+
+void Client::CloseSocket()
+{
+	linger ln{ 0, 0 };
+	::setsockopt(mSocket, SOL_SOCKET, SO_LINGER, reinterpret_cast<char*>(&ln), sizeof(ln));
+
+	::shutdown(mSocket, SD_BOTH);
 	::closesocket(mSocket);
 }
 
@@ -66,19 +76,19 @@ void Client::Recv()
 			break;
 		}
 
+		gIOLock.lock();
+		std::cout << "수신 바이트: " << len << "\n";
+		gIOLock.unlock();
+
 		currentData = mRecvBuffer;
 
 		if (mRemainByte > 0) {
 			// 받은 recvBuffer에서 이전에 남았던 데이터를 앞에 붙이기 위한 작업
-#if NETWORK_DEBUG
-			{
-				std::lock_guard ioGuard{ mIOLock };
-				std::cout << "prev remain len: " << mRemainByte << std::endl;
-			}	
-#endif
 			memmove(mRecvBuffer + mRemainByte, mRecvBuffer, mRemainByte);
-			memcpy(mRecvBuffer, currentData, mRemainByte);
+			memcpy(mRecvBuffer, remainDataBuffer, mRemainByte);
+
 			memset(mRecvBuffer, 0, RECV_SIZE);
+			memset(remainDataBuffer, 0, RECV_SIZE);
 		}
 
 		remainSize = len + mRemainByte;
@@ -123,16 +133,15 @@ void Client::ProcessPacket(char* packet)
 			// 세션 업데이트
 			PacketPlayerJoin* joinPacket = reinterpret_cast<PacketPlayerJoin*>(packet);
 			mSession->SetPosition(joinPacket->x, joinPacket->y);
-			mClientState = CLIENT_STATE::JOINED;
 		}
 
-		gServerCore.Broadcast<PacketPlayerJoin>(PACKET_PLAYER_JOIN, senderId, packet);
 		gServerCore.SendOtherClientsSession(senderId);
+		gServerCore.Broadcast<PacketPlayerJoin>(PACKET_PLAYER_JOIN, senderId, packet);
 		break;
 
 	case PACKET_PLAYER_EXIT:
 		gServerCore.Broadcast<PacketPlayerExit>(PACKET_PLAYER_EXIT, senderId, packet);
-		gServerCore.ExitClient(senderId);
+		CloseSocket();
 		break;
 
 	case PACKET_PING:

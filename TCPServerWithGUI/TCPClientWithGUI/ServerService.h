@@ -35,12 +35,17 @@ public:
 	{
 		PacketType packet{ sizeof(PacketType), type, mId, (args)... };
 
-		::send(
+		int sendResult = ::send(
 			mSocket,
 			reinterpret_cast<char*>(&packet),
 			packet.size,
 			0
 		);
+		
+		if (SOCKET_ERROR == sendResult) {
+			::MessageBoxA(nullptr, "Send Error", GetErrorString().c_str(), MB_OK | MB_ICONERROR);
+			PostQuitMessage(0);
+		}
 	}
 
 private:

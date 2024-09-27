@@ -138,14 +138,16 @@ void GameFramework::CreateObjects()
     CreatePointsFromFile();
 }
 
-void GameFramework::JoinOtherPlayer(byte id, Player* player)
+void GameFramework::JoinOtherPlayer(byte id, float x, float y)
 {
+    //std::lock_guard playerGuard{ mPlayerLock };
     // 플레이어 추가
-    mOtherPlayers.emplace(id, player);
+    mOtherPlayers.emplace(id, std::make_unique<Player>(x, y));
 }
 
 void GameFramework::UpdateJoinedPlayer(byte id, Position pos)
 {
+    //std::lock_guard playerGuard{ mPlayerLock };
     // 해당 플레이어 정보 업데이트
     if (mOtherPlayers.contains(id)) {
         mOtherPlayers[id]->SetPosition(pos);
@@ -154,6 +156,7 @@ void GameFramework::UpdateJoinedPlayer(byte id, Position pos)
 
 void GameFramework::ExitPlayer(byte id)
 {
+    //std::lock_guard playerGuard{ mPlayerLock };
     // Exit 패킷이 오는 경우 해당 id 플레이어가 존재하는지 확인 후 지운다.
     if (mOtherPlayers.contains(id)) {
         mOtherPlayers.erase(id);

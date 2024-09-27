@@ -43,8 +43,10 @@ public:
 		packet.type = type;
 		packet.senderId = senderId;
 
-		std::lock_guard clientGuard{ mClientsLock };
 		for (byte id = 0; id < MAX_CLIENT; ++id) {
+			if (mClients[id].GetState() == CLIENT_STATE::EXITED) {
+				continue;
+			}
 			mClients[id].Send(&packet);
 		}
 	}
@@ -63,5 +65,4 @@ private:
 	/* 공유 변수 Vector */
 	std::vector<Client> mClients;
 	// 자료 구조의 변경을 보호하기 위한 mutex
-	std::mutex mClientsLock;
 };

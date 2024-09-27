@@ -31,7 +31,7 @@ public:
 	void CreateObjects();
 
 	// 다른 플레이어 접속, 퇴장, 업데이트 처리
-	void JoinOtherPlayer(byte id, class Player* player);
+	void JoinOtherPlayer(byte id, float x, float y);
 	void UpdateJoinedPlayer(byte id, Position pos);
 	void ExitPlayer(byte id);
 
@@ -87,6 +87,9 @@ private:
 
 	// draw test
 	std::unique_ptr<class Player> mPlayer{ };
-	std::unordered_map<byte, std::unique_ptr<class Player>> mOtherPlayers{ };
 	std::vector<std::unique_ptr<class Shape>> mShapes;
+
+	/* 공유 변수 */
+	std::unordered_map<byte, std::unique_ptr<class Player>> mOtherPlayers{ };
+	std::mutex mPlayerLock{ };
 };

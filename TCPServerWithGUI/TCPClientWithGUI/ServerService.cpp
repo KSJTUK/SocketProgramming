@@ -68,12 +68,19 @@ void ServerService::CreateRecvThread()
 void ServerService::Join()
 {
 	mRecvThreadRunning = false;
+
+	// Graceful Shutdown
+	linger ln{ 0, 0 };
+	::setsockopt(mSocket, SOL_SOCKET, SO_LINGER, reinterpret_cast<char*>(&ln), sizeof(ln));
+
 	::shutdown(mSocket, SD_BOTH);
 	::closesocket(mSocket);
 
+	MessageBoxA(nullptr, "Waiting Join", "Waiting Join", MB_OK);
 	if (mRecvThread.joinable()) {
 		mRecvThread.join();
 	}
+	MessageBoxA(nullptr, "Joined", "Joined", MB_OK);
 }
 
 // 실제로 데이터를 수신하는 함수
@@ -89,6 +96,7 @@ void ServerService::Recv()
 		// recv, 받은 데이터의 길이가 0또는 음수이면 종료 or 에러
 		int len = ::recv(mSocket, mRecvBuffer, RECV_SIZE, 0);
 		if (len <= 0) {
+			MessageBoxA(nullptr, "Recv < 0", "---", MB_OK);
 			break;
 		}
 
@@ -97,7 +105,7 @@ void ServerService::Recv()
 		if (mRemainByte > 0) {
 			// 받은 recvBuffer에서 이전에 남았던 데이터를 앞에 붙이기 위한 작업
 			memmove(mRecvBuffer + mRemainByte, mRecvBuffer, mRemainByte);
-			memcpy(mRecvBuffer, currentData, mRemainByte);
+			memcpy(mRecvBuffer, remainDataBuffer, mRemainByte);
 			memset(mRecvBuffer, 0, RECV_SIZE);
 		}
 
@@ -129,35 +137,29 @@ void ServerService::ProcessPacket(char* packet)
 
 	switch (type) {
 	case PACKET_PLAYER_CONNECT:
-		{
-			mId = senderId;
-		}
+		mId = senderId;
 		break;
 
 	case PACKET_POSITION2D:
 		{
 			PacketPosition2D* position = reinterpret_cast<PacketPosition2D*>(packet);
 			gGameFramework.UpdateJoinedPlayer(senderId, { position->x, position->y });
-	}
+		}
 		break;
 
 	case PACKET_PLAYER_JOIN:
 		{
 			PacketPlayerJoin* joinedPlayer = reinterpret_cast<PacketPlayerJoin*>(packet);
-			gGameFramework.JoinOtherPlayer(senderId, new Player{ joinedPlayer->x, joinedPlayer->y });
+			gGameFramework.JoinOtherPlayer(senderId, joinedPlayer->x, joinedPlayer->y);
 		}
 		break;
 
 	case PACKET_PLAYER_EXIT:
-		{
-			gGameFramework.ExitPlayer(senderId);
-		}
+		gGameFramework.ExitPlayer(senderId);
 		break;
 
 	case PACKET_PING:
-		{
-			gGameFramework.PingResult(reinterpret_cast<PacketPing*>(packet)->timeSent);
-		}
+		gGameFramework.PingResult(reinterpret_cast<PacketPing*>(packet)->timeSent);
 		break;
 
 	default:

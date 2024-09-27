@@ -26,6 +26,12 @@ void TCPServerCore::StartAccept()
 		}
 
         byte addedId = AddClient(clientSocket);
+        if (NULL_CLIENT_ID == addedId) {
+            gIOLock.lock();
+            std::cout << "NULL CLIENT ID" << std::endl;
+            gIOLock.unlock();
+            continue;
+        }
 
         // 람다를 이용해 생성
         // 처음 연결시 클라이언트에게 ID를 부여하는 패킷 전송
@@ -37,7 +43,7 @@ void TCPServerCore::StartAccept()
                 client.Send<PacketPlayerConnect>(PACKET_PLAYER_CONNECT);
 
                 client.Recv();
-            
+
                 ExitClient(id);
             }
 		});
@@ -69,19 +75,16 @@ std::vector<Client>& TCPServerCore::GetClients()
 
 byte TCPServerCore::AddClient(SOCKET clientSocket)
 {
-    for (byte id = 0; id < MAX_CLIENT; ++id) {
-        if (mClients[id].GetState() == CLIENT_STATE::EXITED) {
-            Address::NetHostInfo hostInfo = Address::GetHostInfo(clientSocket);
+	for (byte id = 0; id < MAX_CLIENT; ++id) {
+		if (mClients[id].GetState() == CLIENT_STATE::EXITED) {
+			Address::NetHostInfo hostInfo = Address::GetHostInfo(clientSocket);
 
-            {
-                std::lock_guard clientGuard{ mClientsLock };
-                mClients[id].Join(clientSocket, id);
-            }
-            
-            std::cout << "[클라이언트 접속] IP: " << hostInfo.ip << " | PORT: " << hostInfo.port << "\n";
-            return id;
-        }
-    }
+			mClients[id].Join(clientSocket, id);
+
+			std::cout << "[클라이언트 접속] IP: " << hostInfo.ip << " | PORT: " << hostInfo.port << "\n";
+			return id;
+		}
+	}
 
     return NULL_CLIENT_ID;
 }
@@ -91,17 +94,14 @@ void TCPServerCore::ExitClient(byte id)
     if (mClients[id].GetState() == CLIENT_STATE::JOINED) {
         auto& [ip, port] = mClients[id].GetHostInfo();
         std::cout << "[클라이언트 연결 종료] IP: " << ip << " | PORT: " << port << "\n";
-        
-        {
-            std::lock_guard clientGuard{ mClientsLock };
-            mClients[id].Exit();
-        }
+        mClients[id].Exit();
     }
 }
 
 void TCPServerCore::SendOtherClientsSession(byte targetId)
 {
     static std::vector<PacketPlayerJoin> packets(MAX_CLIENT);
+
     for (int id = 0; id < MAX_CLIENT; ++id) {
         if (mClients[id].GetState() == CLIENT_STATE::EXITED) {
             continue;
@@ -116,7 +116,6 @@ void TCPServerCore::SendOtherClientsSession(byte targetId)
         packets[id].y = y;
     }
 
-    std::lock_guard clientGuard{ mClientsLock };
     // 일단 보내고 클라이언트에서 id가 같은 JOIN 패킷은 무시하자
     // 패킷도 미리 만들어 놓고 보내기만 하자 -> lock을 건 이후의 명령어를 최소화
     for (int id = 0; id < MAX_CLIENT; ++id) {

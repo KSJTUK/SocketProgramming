@@ -29,6 +29,8 @@ inline constexpr byte MAX_CLIENT = 64;
 
 #define NETWORK_DEBUG 1
 #if NETWORK_DEBUG
+inline std::mutex gIOLock;
+
 inline std::string gPacketTypeStrs[PACKET_TYPE_COUNT]{
 	"PACKET_POSITION2D",
 	"PACKET_PING",

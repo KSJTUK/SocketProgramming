@@ -118,6 +118,7 @@ void RecvAndSend(SOCKET socket)
             HandleSocketError();
             ::exit(EXIT_FAILURE);
         }
+
         std::cout << "보내기 완료.\n\n";
         std::cout << "----------------------------------------\n\n";
 
