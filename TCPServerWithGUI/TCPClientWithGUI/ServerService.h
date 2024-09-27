@@ -54,6 +54,8 @@ private:
 	char mRecvBuffer[RECV_SIZE]{ };
 
 	byte mId{ 0xFF };
+
+	byte mRemainByte{ 0 };
 	volatile bool mRecvThreadRunning{ true };
 };
 

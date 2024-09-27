@@ -259,10 +259,6 @@ void GameFramework::Render()
 
     gGameFramework.GetDrawBuffer()->DrawString(std::to_string(mTimer->GetFPS()), 10, 50);
 
-    mDrawBuffer->DrawString("FPS: "s + std::to_string(mTimer->GetFPS()), 10, 20);
-    mDrawBuffer->DrawString("Delta Time: "s + std::to_string(mTimer->GetDeltaTime()) + "s"s, 10, 50);
-    mDrawBuffer->DrawString("지연률"s + std::to_string(mRecvTimeLatency) + "ms"s, 10, 80);
-
     for (auto& [id, otherPlayer] : mOtherPlayers) {
         otherPlayer->Render();
     }
@@ -272,6 +268,11 @@ void GameFramework::Render()
     }
 
     mPlayer->Render();
+
+    mDrawBuffer->DrawString("FPS: "s + std::to_string(mTimer->GetFPS()), 10, 20);
+    mDrawBuffer->DrawString("Delta Time: "s + std::to_string(mTimer->GetDeltaTime()) + "s"s, 10, 50);
+    mDrawBuffer->DrawString("지연률"s + std::to_string(mRecvTimeLatency) + "ms"s, 10, 80);
+    mDrawBuffer->DrawString("다른 클라이언트: "s + std::to_string(mOtherPlayers.size()), 10, 110);
 
     mDrawBuffer->CopyBufferMemToMain();
 }

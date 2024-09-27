@@ -106,6 +106,7 @@ void TCPServerCore::SendOtherClientsSession(byte targetId)
         if (mClients[id].GetState() == CLIENT_STATE::EXITED) {
             continue;
         }
+
         auto [x, y] = mClients[id].GetPosition();
 
         packets[id].type = PACKET_PLAYER_JOIN;

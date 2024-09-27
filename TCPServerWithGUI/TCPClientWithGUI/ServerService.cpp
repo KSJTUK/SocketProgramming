@@ -79,14 +79,43 @@ void ServerService::Join()
 // 실제로 데이터를 수신하는 함수
 void ServerService::Recv()
 {
-	while (mRecvThreadRunning) {
-		int len = ::recv(mSocket, mRecvBuffer, RECV_SIZE, 0);
+	// 남는 데이터를 보관하기 위한 저장소
+	char remainDataBuffer[RECV_SIZE]{ 0 };
+	// 패킷 데이터 포인팅 -> 현재 처리중인 패킷의 주소
+	char* currentData = mRecvBuffer;
+	int remainSize = 0;
 
+	while (mRecvThreadRunning) {
+		// recv, 받은 데이터의 길이가 0또는 음수이면 종료 or 에러
+		int len = ::recv(mSocket, mRecvBuffer, RECV_SIZE, 0);
 		if (len <= 0) {
 			break;
 		}
 
-		ProcessPacket(mRecvBuffer);
+		currentData = mRecvBuffer;
+
+		if (mRemainByte > 0) {
+			// 받은 recvBuffer에서 이전에 남았던 데이터를 앞에 붙이기 위한 작업
+			memmove(mRecvBuffer + mRemainByte, mRecvBuffer, mRemainByte);
+			memcpy(mRecvBuffer, currentData, mRemainByte);
+			memset(mRecvBuffer, 0, RECV_SIZE);
+		}
+
+		remainSize = len + mRemainByte;
+
+		while (remainSize > 0) {
+			byte packetSize = currentData[0];
+			if (packetSize > remainSize) {
+				mRemainByte = remainSize;
+				memcpy(remainDataBuffer, currentData, remainSize);
+				break;
+			}
+
+			ProcessPacket(currentData);
+
+			remainSize -= packetSize;
+			currentData += packetSize;
+		}
 	}
 }
 
