@@ -33,6 +33,8 @@
 #include "Random.h"
 #include "Endian.h"
 
+#define NETWORK_DEBUG 1
+
 using namespace std::literals;
 
 inline constexpr byte NULL_CLIENT_ID = 0xFF;

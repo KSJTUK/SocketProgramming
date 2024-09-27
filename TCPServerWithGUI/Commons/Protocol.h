@@ -15,7 +15,7 @@
 #if USE_LOOP_BACK
 inline constexpr const char* SERVER_IP = "127.0.0.1";
 #else
-inline constexpr const char* SERVER_IP = "183.101.111.33";
+inline constexpr const char* SERVER_IP = "183.101.110.239";
 #endif
 inline constexpr unsigned short SERVER_PORT = 7777;
 
@@ -27,6 +27,8 @@ enum {
 	PACKET_PLAYER_CONNECT,
 	PACKET_PLAYER_JOIN,
 	PACKET_PLAYER_EXIT,
+
+	PACKET_TYPE_COUNT,
 };
 
 #pragma pack(push, 1)
@@ -43,8 +45,8 @@ struct PacketPing : public PacketBase {
 struct PacketPlayerConnect : public PacketBase {
 };
 
-struct PacketPlayerJoin : public PacketBase { 
-	float x;
+struct PacketPlayerJoin : public PacketBase {
+	float x; 
 	float y;
 };
 

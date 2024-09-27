@@ -6,6 +6,7 @@
 #pragma comment(lib, "ws2_32.lib")
 
 #include <iostream>
+#include <array>
 #include <list>
 #include <vector>
 #include <memory>
@@ -21,27 +22,20 @@
 #include "Protocol.h"
 #include "Endian.h"
 
+inline constexpr byte NULL_CLIENT_ID = 0xFF;
+inline constexpr byte MAX_CLIENT = 64;
+
+#define NETWORK_DEBUG 0
+#if NETWORK_DEBUG
+inline std::string gPacketTypeStrs[PACKET_TYPE_COUNT]{
+	"PACKET_POSITION2D",
+	"PACKET_PING",
+	"PACKET_PLAYER_CONNECT",
+	"PACKET_PLAYER_JOIN",
+	"PACKET_PLAYER_EXIT",
+};
+#endif
+
 #include "TCPServerCore.h"
-
-namespace Address {
-	struct NetHostInfo {
-		char ip[INET_ADDRSTRLEN]{ };
-		unsigned short port;
-	};
-
-	inline NetHostInfo GetHostInfo(SOCKET socket)
-	{
-		NetHostInfo hostInfo{ };
-
-		sockaddr_in address;
-		int addressLength{ sizeof(sockaddr_in) };
-		::getpeername(socket, reinterpret_cast<sockaddr*>(&address), &addressLength);
-
-		::inet_ntop(AF_INET, &address.sin_addr, hostInfo.ip, INET_ADDRSTRLEN);
-		hostInfo.port = ::ntohs(address.sin_port);
-
-		return hostInfo;
-	}
-}
 
 extern TCPServerCore gServerCore;

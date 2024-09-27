@@ -259,7 +259,7 @@ void GameFramework::Render()
 
     gGameFramework.GetDrawBuffer()->DrawString(std::to_string(mTimer->GetFPS()), 10, 50);
 
-    mDrawBuffer->DrawString(std::to_string(mTimer->GetFPS()), 10, 20);
+    mDrawBuffer->DrawString("FPS: "s + std::to_string(mTimer->GetFPS()), 10, 20);
     mDrawBuffer->DrawString("Delta Time: "s + std::to_string(mTimer->GetDeltaTime()) + "s"s, 10, 50);
     mDrawBuffer->DrawString("Áö¿¬·ü"s + std::to_string(mRecvTimeLatency) + "ms"s, 10, 80);
 

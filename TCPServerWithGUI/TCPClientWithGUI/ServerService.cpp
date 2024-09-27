@@ -47,6 +47,9 @@ bool ServerService::ConnectToServer()
 		tryCount += 1;
 	}
 
+	bool noDelay = true;
+	::setsockopt(mSocket, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&noDelay), sizeof(noDelay));
+
 	return true;
 }
 

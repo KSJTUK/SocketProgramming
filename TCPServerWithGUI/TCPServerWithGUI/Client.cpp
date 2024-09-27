@@ -9,24 +9,17 @@
   ---------------------------------------- */
 
 
-Client::Client() = default;
-
-Client::Client(byte cid, SOCKET socket, const Address::NetHostInfo& hostInfo)
-	: mSocket{ socket },
-	mHostInfo{ hostInfo }
+Client::Client()
+	: mSocket{ INVALID_SOCKET },
+	mHostInfo{ },
+	mSession{ std::make_unique<ClientSession>() }
 {
-	bool nodelay = true;
-	::setsockopt(mSocket, SOL_SOCKET, TCP_NODELAY, reinterpret_cast<const char*>(&nodelay), 1);
-	mSession = std::make_unique<ClientSession>(cid);
 }
 
 Client::Client(Client&& other) noexcept
 	: mSocket{ other.mSocket },
 	mHostInfo{ std::move(other.mHostInfo) }
 {
-	bool nodelay = true;
-	::setsockopt(mSocket, SOL_SOCKET, TCP_NODELAY, reinterpret_cast<const char*>(&nodelay), 1);
-	mSession.reset(other.mSession.release());
 }
 
 Client::~Client()
@@ -43,6 +36,19 @@ std::pair<float, float> Client::GetPosition() const
 	return mSession->GetPosition();
 }
 
+void Client::Join(SOCKET clientSocket, byte id)
+{
+	mSocket = clientSocket;
+	mSession->SetId(id);
+}
+
+void Client::Exit()
+{
+	mSession->SetId(NULL_CLIENT_ID);
+	mClientState = CLIENT_STATE::EXITED;
+	::closesocket(mSocket);
+}
+
 void Client::Recv()
 {
 	while (true) {
@@ -53,6 +59,18 @@ void Client::Recv()
 			::closesocket(mSocket);
 			break;
 		}
+
+#if NETWORK_DEBUG
+		//{
+		//	std::lock_guard ioGuard{ mIOLock };
+		//	if (len != (int)mRecvBuffer[0]) {
+		//		std::cout << "PACKET Type: " << gPacketTypeStrs[mRecvBuffer[1]] << std::endl;;
+		//		std::cout << "Send Byte: " << (int)mRecvBuffer[0] << ", Recv Byte: " << len << std::endl;
+		//	}
+		//}
+
+		std::cout << "On Recv: " << len << "\n";
+#endif
 
 		ProcessPacket(mRecvBuffer);
 	}
@@ -70,7 +88,7 @@ void Client::ProcessPacket(char* packet)
 		break;
 
 	case PACKET_POSITION2D:
-		BroadCasePacket<PacketPosition2D>(PACKET_POSITION2D, senderId, packet);
+		gServerCore.Broadcast<PacketPosition2D>(PACKET_POSITION2D, senderId, packet);
 		break;
 
 	case PACKET_PLAYER_JOIN:
@@ -78,46 +96,20 @@ void Client::ProcessPacket(char* packet)
 			// 세션 업데이트
 			PacketPlayerJoin* joinPacket = reinterpret_cast<PacketPlayerJoin*>(packet);
 			mSession->SetPosition(joinPacket->x, joinPacket->y);
+			mClientState = CLIENT_STATE::JOINED;
 		}
 
-		BroadCasePacket<PacketPlayerJoin>(PACKET_PLAYER_JOIN, senderId, packet);
-		SendOtherClientsSession(senderId);
+		gServerCore.Broadcast<PacketPlayerJoin>(PACKET_PLAYER_JOIN, senderId, packet);
+		gServerCore.SendOtherClientsSession(senderId);
 		break;
 
 	case PACKET_PLAYER_EXIT:
-		BroadCasePacket<PacketPlayerExit>(PACKET_PLAYER_EXIT, senderId, packet);
+		gServerCore.Broadcast<PacketPlayerExit>(PACKET_PLAYER_EXIT, senderId, packet);
+		gServerCore.ExitClient(senderId);
 		break;
 
 	case PACKET_PING:
 		Send<PacketPing>(PACKET_PING, packet);
 		break;
-	}
-}
-
-void Client::SendOtherClientsSession(byte targetId)
-{
-	PacketPlayerJoin packet{ sizeof(PacketPlayerJoin), PACKET_PLAYER_JOIN, targetId };
-
-	// 타겟으로 하는 클라이언트가 존재하는지 여부 검사
-	auto& clients = gServerCore.GetClients();
-	if (not clients.contains(targetId)) {
-		return;
-	}
-
-	// 존재한다면 그 클라이언트에게 다른 클라이언트들의 존재여부 송신
-	Client& targetClient = clients[targetId];
-
-	for (auto& [id, client] : clients) {
-		if (id == targetId) {
-			continue;
-		}
-
-		// 다른 클라이언트의 위치정보를 받아 송신
-		auto [x, y] = client.GetPosition();
-		packet.x = x;
-		packet.y = y;
-		packet.senderId = id;
-
-		targetClient.Send(&packet);
 	}
 }
