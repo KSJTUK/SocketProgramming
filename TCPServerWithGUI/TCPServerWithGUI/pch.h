@@ -10,11 +10,13 @@
 #include <list>
 #include <vector>
 #include <memory>
+#include <queue>
+#include <unordered_map>
 
+// concurrency support lib
 #include <thread>
 #include <mutex>
 #include <atomic>
-#include <unordered_map>
 
 // Commons
 #include "Macros.h"
@@ -25,7 +27,7 @@
 inline constexpr byte NULL_CLIENT_ID = 0xFF;
 inline constexpr byte MAX_CLIENT = 64;
 
-#define NETWORK_DEBUG 0
+#define NETWORK_DEBUG 1
 #if NETWORK_DEBUG
 inline std::string gPacketTypeStrs[PACKET_TYPE_COUNT]{
 	"PACKET_POSITION2D",

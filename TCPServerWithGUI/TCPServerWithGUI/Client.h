@@ -111,6 +111,7 @@ private:
 	std::unique_ptr<class ClientSession> mSession;
 	Address::NetHostInfo mHostInfo{ };
 	char mRecvBuffer[RECV_SIZE]{ };
+	byte mRemainByte{ };
 	CLIENT_STATE mClientState{ CLIENT_STATE::EXITED };
 
 #if NETWORK_DEBUG

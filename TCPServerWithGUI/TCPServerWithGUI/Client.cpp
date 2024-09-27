@@ -51,28 +51,55 @@ void Client::Exit()
 
 void Client::Recv()
 {
-	while (true) {
-		int len = ::recv(mSocket, mRecvBuffer, RECV_SIZE, 0);
+	// 남는 데이터를 보관하기 위한 저장소
+	char remainDataBuffer[RECV_SIZE]{ 0 };
+	// 패킷 데이터 포인팅 -> 현재 처리중인 패킷의 주소
+	char* currentData = mRecvBuffer;
+	int remainSize = 0;
 
+	while (true) {
+		// recv, 받은 데이터의 길이가 0또는 음수이면 종료 or 에러
+		int len = ::recv(mSocket, mRecvBuffer, RECV_SIZE, 0);
 		if (len <= 0) {
 			::shutdown(mSocket, SD_BOTH);
 			::closesocket(mSocket);
 			break;
 		}
 
+		currentData = mRecvBuffer;
+
+		if (mRemainByte > 0) {
+			// 받은 recvBuffer에서 이전에 남았던 데이터를 앞에 붙이기 위한 작업
 #if NETWORK_DEBUG
-		//{
-		//	std::lock_guard ioGuard{ mIOLock };
-		//	if (len != (int)mRecvBuffer[0]) {
-		//		std::cout << "PACKET Type: " << gPacketTypeStrs[mRecvBuffer[1]] << std::endl;;
-		//		std::cout << "Send Byte: " << (int)mRecvBuffer[0] << ", Recv Byte: " << len << std::endl;
-		//	}
-		//}
-
-		std::cout << "On Recv: " << len << "\n";
+			{
+				std::lock_guard ioGuard{ mIOLock };
+				std::cout << "prev remain len: " << mRemainByte << std::endl;
+			}	
 #endif
+			memmove(mRecvBuffer + mRemainByte, mRecvBuffer, mRemainByte);
+			memcpy(mRecvBuffer, currentData, mRemainByte);
+			memset(mRecvBuffer, 0, RECV_SIZE);
+		}
 
-		ProcessPacket(mRecvBuffer);
+		remainSize = len + mRemainByte;
+
+		// 패킷이 뭉쳐서 오면?
+		// 패킷의 사이즈는 이미 적어 두었음. 첫번째 바이트가 패킷의 사이즈이므로,
+		// 이 사이즈만큼 포인터를 이동시키면서 남지 않을때까지 처리
+		// 패킷이 다 오지 않은 경우? -> 받은 사이즈 및 남은 데이터를 저장하고 다시 recv
+		while (remainSize > 0) {
+			byte packetSize = currentData[0];
+			if (packetSize > remainSize) {
+				mRemainByte = remainSize;
+				memcpy(remainDataBuffer, currentData, remainSize);
+				break;
+			}
+
+			ProcessPacket(currentData);
+
+			remainSize -= packetSize;
+			currentData += packetSize;
+		}
 	}
 }
 
