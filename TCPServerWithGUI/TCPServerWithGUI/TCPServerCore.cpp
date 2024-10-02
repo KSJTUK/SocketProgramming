@@ -14,7 +14,9 @@ TCPServerCore::~TCPServerCore() = default;
 void TCPServerCore::CreateCoreObjects()
 {
     mListener = std::make_unique<Listener>(SERVER_IP, SERVER_PORT);
-    mClients.resize(MAX_CLIENT);
+    for (int id = 0; id < MAX_CLIENT; ++id) {
+        mClients.emplace_back(std::make_unique<Client>());
+    }
 }
 
 void TCPServerCore::StartAccept()
@@ -38,13 +40,9 @@ void TCPServerCore::StartAccept()
         mClientServiceThreads.push_back(std::thread{ [=]()
             {
                 byte id = addedId;
-                Client& client = mClients[id];
+                mClients[id]->Send<PacketPlayerConnect>(PACKET_PLAYER_CONNECT);
 
-                client.Send<PacketPlayerConnect>(PACKET_PLAYER_CONNECT);
-
-                client.Recv();
-
-                ExitClient(id);
+                mClients[id]->Recv();
             }
 		});
 	}
@@ -62,13 +60,15 @@ void TCPServerCore::Init()
 void TCPServerCore::Join()
 {
     for (std::thread& thread : mClientServiceThreads) {
-        thread.join();
+        if (thread.joinable()) {
+            thread.join();
+        }
     }
 
     ::WSACleanup();
 }
 
-std::vector<Client>& TCPServerCore::GetClients()
+std::vector<std::unique_ptr<Client>>& TCPServerCore::GetClients()
 {
     return mClients;
 }
@@ -76,14 +76,19 @@ std::vector<Client>& TCPServerCore::GetClients()
 byte TCPServerCore::AddClient(SOCKET clientSocket)
 {
 	for (byte id = 0; id < MAX_CLIENT; ++id) {
-		if (mClients[id].GetState() == CLIENT_STATE::EXITED) {
-			Address::NetHostInfo hostInfo = Address::GetHostInfo(clientSocket);
+        {
+            std::lock_guard stateGuard{ mClients[id]->GetMutex() };
+            if (mClients[id]->GetState() == CLIENT_STATE::JOINED) {
+                continue;
+            }
+            mClients[id]->Join(clientSocket, id);
+        }
 
-			mClients[id].Join(clientSocket, id);
+		Address::NetHostInfo hostInfo = Address::GetHostInfo(clientSocket);
 
-			std::cout << "[클라이언트 접속] IP: " << hostInfo.ip << " | PORT: " << hostInfo.port << "\n";
-			return id;
-		}
+
+		std::cout << "[클라이언트 접속] IP: " << hostInfo.ip << " | PORT: " << hostInfo.port << "\n";
+		return id;
 	}
 
     return NULL_CLIENT_ID;
@@ -91,38 +96,24 @@ byte TCPServerCore::AddClient(SOCKET clientSocket)
 
 void TCPServerCore::ExitClient(byte id)
 {
-    if (mClients[id].GetState() == CLIENT_STATE::JOINED) {
-        auto& [ip, port] = mClients[id].GetHostInfo();
+    std::lock_guard stateGuard{ mClients[id]->GetMutex() };
+    if (mClients[id]->GetState() == CLIENT_STATE::JOINED) {
+        auto& [ip, port] = mClients[id]->GetHostInfo();
         std::cout << "[클라이언트 연결 종료] IP: " << ip << " | PORT: " << port << "\n";
-        mClients[id].Exit();
+        mClients[id]->CloseSocket();
+        mClients[id]->Exit();
     }
 }
 
 void TCPServerCore::SendOtherClientsSession(byte targetId)
 {
-    static std::vector<PacketPlayerJoin> packets(MAX_CLIENT);
-
+    PacketPlayerJoin packet{ sizeof(PacketPlayerJoin), PACKET_PLAYER_JOIN };
     for (int id = 0; id < MAX_CLIENT; ++id) {
-        if (mClients[id].GetState() == CLIENT_STATE::EXITED) {
-            continue;
+        std::lock_guard stateGuard{ mClients[id]->GetMutex() };
+		if (mClients[id]->GetState() == CLIENT_STATE::JOINED) {
+			packet.senderId = id;
+			auto [x, y] = mClients[id]->GetPosition();
+			mClients[targetId]->Send(&packet);
         }
-
-        auto [x, y] = mClients[id].GetPosition();
-
-        packets[id].type = PACKET_PLAYER_JOIN;
-        packets[id].size = sizeof(PacketPlayerJoin);
-        packets[id].senderId = id;
-        packets[id].x = x;
-        packets[id].y = y;
-    }
-
-    // 일단 보내고 클라이언트에서 id가 같은 JOIN 패킷은 무시하자
-    // 패킷도 미리 만들어 놓고 보내기만 하자 -> lock을 건 이후의 명령어를 최소화
-    for (int id = 0; id < MAX_CLIENT; ++id) {
-        if (mClients[id].GetState() == CLIENT_STATE::EXITED) {
-            continue;
-        }
-
-        mClients[targetId].Send(&packets[id]);
     }
 }

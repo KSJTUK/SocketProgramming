@@ -97,6 +97,7 @@ void GameFramework::Destroy()
 
     // TODO
     mServerService->Join();
+    mServerService.reset();
 
     mTimer.reset();
     mServerService.reset();

@@ -24,7 +24,7 @@ public:
 	void Join();
 
 	/** Getter **/
-	std::vector<Client>& GetClients();
+	std::vector<std::unique_ptr<Client>>& GetClients();
 
 	/** 클라이언트 입장 퇴장 처리 **/
 	byte AddClient(SOCKET clientSocket);
@@ -44,10 +44,12 @@ public:
 		packet.senderId = senderId;
 
 		for (byte id = 0; id < MAX_CLIENT; ++id) {
-			if (mClients[id].GetState() == CLIENT_STATE::EXITED) {
+			std::lock_guard stateLock{ mClients[id]->GetMutex() };
+			if (mClients[id]->GetState() == CLIENT_STATE::EXITED) {
 				continue;
 			}
-			mClients[id].Send(&packet);
+
+			mClients[id]->Send(&packet);
 		}
 	}
 
@@ -63,6 +65,5 @@ private:
 	// 클라이언트의 개수를 고정해둔다면 굳이 map을 쓸 필요가 있는가?
 	// - 24.09.23 std::vector로 변경
 	/* 공유 변수 Vector */
-	std::vector<Client> mClients;
-	// 자료 구조의 변경을 보호하기 위한 mutex
+	std::vector<std::unique_ptr<Client>> mClients;
 };

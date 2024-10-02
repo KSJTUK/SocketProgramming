@@ -1,22 +1,5 @@
 #pragma once
 
-/* ----------------------------------------
-*
-*				Client
-*		
-* 실제로 연결된 주체를 표현할 클래스
-* Send, Recv등의 자겁을 여기서 할 예정
-*
-* 09-09 수정 -> id, Position 값을 ClientSession이 가지도록 수정
-* Client클래스는 ClientSession 객체를 하나 가지도록 함
-* 
-* member:
-* id
-* session
-* host info
-* buffer
-  ---------------------------------------- */
-
 namespace Address {
 	struct NetHostInfo {
 		char ip[INET_ADDRSTRLEN];
@@ -43,12 +26,28 @@ enum class CLIENT_STATE : char {
 	EXITED,
 };
 
+/* ----------------------------------------
+*
+*				Client
+*		
+* 실제로 연결된 주체를 표현할 클래스
+* Send, Recv등의 자겁을 여기서 할 예정
+*
+* 09-09 수정 -> id, Position 값을 ClientSession이 가지도록 수정
+* Client클래스는 ClientSession 객체를 하나 가지도록 함
+* 
+* member:
+* id
+* session
+* host info
+* buffer
+  ---------------------------------------- */
+
 class Client {
 	inline static constexpr int RECV_SIZE = 1024;
 
 public:
 	Client();
-	Client(Client&& other) noexcept;
 	~Client();
 
 public:
@@ -57,6 +56,8 @@ public:
 	const byte GetId() const;
 	std::pair<float, float> GetPosition() const;
 	CLIENT_STATE GetState() const { return mClientState; }
+
+	std::mutex& GetMutex() { return mStateLock; }
 
 	void Join(SOCKET clientSocket, byte id);
 	void Exit();
@@ -91,6 +92,7 @@ public:
 		std::memcpy(&packet, data, sizeof(PacketType));
 		packet.size = sizeof(PacketType);
 		packet.type = type;
+		packet.senderId = GetId();
 
 		int result = ::send(
 			mSocket,
@@ -132,8 +134,10 @@ private:
 	SOCKET mSocket{ };
 	std::unique_ptr<class ClientSession> mSession;
 	Address::NetHostInfo mHostInfo{ };
+
 	char mRecvBuffer[RECV_SIZE]{ };
-	byte mRemainByte{ };
+	std::mutex mStateLock;
 
 	CLIENT_STATE mClientState{ CLIENT_STATE::EXITED };
+
 };

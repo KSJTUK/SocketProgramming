@@ -9,13 +9,13 @@
 #include <chrono>
 #include "Endian.h"
 
-#define USE_LOOP_BACK 1
+#define USE_LOOP_BACK 0
 
 // 인라인 상수 정의
 #if USE_LOOP_BACK
 inline constexpr const char* SERVER_IP = "127.0.0.1";
 #else
-inline constexpr const char* SERVER_IP = "183.101.110.239";
+inline constexpr const char* SERVER_IP = "192.168.20.87";
 #endif
 inline constexpr unsigned short SERVER_PORT = 7777;
 

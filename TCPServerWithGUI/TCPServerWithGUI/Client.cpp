@@ -16,13 +16,6 @@ Client::Client()
 {
 }
 
-Client::Client(Client&& other) noexcept
-	: mSocket{ other.mSocket },
-	mHostInfo{ std::move(other.mHostInfo) },
-	mSession{ std::make_unique<ClientSession>() }
-{
-}
-
 Client::~Client()
 {
 }
@@ -52,7 +45,7 @@ void Client::Exit()
 
 void Client::CloseSocket()
 {
-	linger ln{ 0, 0 };
+	linger ln{ 1, 0 };
 	::setsockopt(mSocket, SOL_SOCKET, SO_LINGER, reinterpret_cast<char*>(&ln), sizeof(ln));
 
 	::shutdown(mSocket, SD_BOTH);
@@ -66,32 +59,25 @@ void Client::Recv()
 	// 패킷 데이터 포인팅 -> 현재 처리중인 패킷의 주소
 	char* currentData = mRecvBuffer;
 	int remainSize = 0;
+	int prevRemain = 0;
 
 	while (true) {
 		// recv, 받은 데이터의 길이가 0또는 음수이면 종료 or 에러
 		int len = ::recv(mSocket, mRecvBuffer, RECV_SIZE, 0);
 		if (len <= 0) {
-			::shutdown(mSocket, SD_BOTH);
-			::closesocket(mSocket);
 			break;
 		}
 
-		gIOLock.lock();
-		std::cout << "수신 바이트: " << len << "\n";
-		gIOLock.unlock();
-
-		currentData = mRecvBuffer;
-
-		if (mRemainByte > 0) {
+		if (prevRemain > 0) {
 			// 받은 recvBuffer에서 이전에 남았던 데이터를 앞에 붙이기 위한 작업
-			memmove(mRecvBuffer + mRemainByte, mRecvBuffer, mRemainByte);
-			memcpy(mRecvBuffer, remainDataBuffer, mRemainByte);
-
-			memset(mRecvBuffer, 0, RECV_SIZE);
+			memmove(mRecvBuffer + prevRemain, mRecvBuffer, len);
+			memcpy(mRecvBuffer, remainDataBuffer, prevRemain);
 			memset(remainDataBuffer, 0, RECV_SIZE);
 		}
 
-		remainSize = len + mRemainByte;
+		currentData = mRecvBuffer;
+		remainSize = len + prevRemain;
+		prevRemain = 0;
 
 		// 패킷이 뭉쳐서 오면?
 		// 패킷의 사이즈는 이미 적어 두었음. 첫번째 바이트가 패킷의 사이즈이므로,
@@ -100,7 +86,7 @@ void Client::Recv()
 		while (remainSize > 0) {
 			byte packetSize = currentData[0];
 			if (packetSize > remainSize) {
-				mRemainByte = remainSize;
+				prevRemain = remainSize;
 				memcpy(remainDataBuffer, currentData, remainSize);
 				break;
 			}
@@ -141,7 +127,7 @@ void Client::ProcessPacket(char* packet)
 
 	case PACKET_PLAYER_EXIT:
 		gServerCore.Broadcast<PacketPlayerExit>(PACKET_PLAYER_EXIT, senderId, packet);
-		CloseSocket();
+		gServerCore.ExitClient(senderId);
 		break;
 
 	case PACKET_PING:
