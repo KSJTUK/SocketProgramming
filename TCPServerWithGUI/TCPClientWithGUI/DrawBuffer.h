@@ -20,9 +20,9 @@ public:
 
 	bool IsInCamera(Position objectPos) const;
 
-	void DrawString(std::string_view str, int x, int y);
-	void CleanupBuffer();
-	void CopyBufferMemToMain();
+	void DrawString(std::string_view str, const int x, const int y) const;
+	void CleanupBuffer() const;
+	void CopyBufferMemToMain() const;
 
 private:
 	WindowInfo mWindowInfo{ };

@@ -139,5 +139,4 @@ private:
 	std::mutex mStateLock;
 
 	CLIENT_STATE mClientState{ CLIENT_STATE::EXITED };
-
 };

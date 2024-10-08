@@ -64,29 +64,10 @@ void Player::SetValocity(float velocity)
 
 void Player::RegisterExecutionFn()
 {
-	gGameFramework.GetKeyInput()->RegisterKeyFn(VK_LEFT, [=](float deltaTime)
-		{
-			MoveLeft(deltaTime);
-		}
-	);
-
-	gGameFramework.GetKeyInput()->RegisterKeyFn(VK_RIGHT, [=](float deltaTime)
-		{
-			MoveRight(deltaTime);
-		}
-	);
-
-	gGameFramework.GetKeyInput()->RegisterKeyFn(VK_UP, [=](float deltaTime)
-		{
-			MoveUp(deltaTime);
-		}
-	);
-
-	gGameFramework.GetKeyInput()->RegisterKeyFn(VK_DOWN, [=](float deltaTime)
-		{
-			MoveDown(deltaTime);
-		}
-	);
+	gGameFramework.GetKeyInput()->RegisterKeyFn(VK_LEFT, [=](float deltaTime) { MoveLeft(deltaTime); });
+	gGameFramework.GetKeyInput()->RegisterKeyFn(VK_RIGHT, [=](float deltaTime) { MoveRight(deltaTime); });
+	gGameFramework.GetKeyInput()->RegisterKeyFn(VK_UP, [=](float deltaTime) { MoveUp(deltaTime); });
+	gGameFramework.GetKeyInput()->RegisterKeyFn(VK_DOWN, [=](float deltaTime) { MoveDown(deltaTime); });
 }
 
 void Player::MoveLeft(float deltaTime)

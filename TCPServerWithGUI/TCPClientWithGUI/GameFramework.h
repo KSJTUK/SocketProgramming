@@ -91,5 +91,5 @@ private:
 
 	/* 공유 변수 */
 	std::unordered_map<byte, std::unique_ptr<class Player>> mOtherPlayers{ };
-	//std::mutex mPlayerLock{ };
+	std::mutex mPlayerLock{ };
 };

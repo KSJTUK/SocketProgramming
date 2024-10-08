@@ -15,7 +15,7 @@ void TCPServerCore::CreateCoreObjects()
 {
     mListener = std::make_unique<Listener>(SERVER_IP, SERVER_PORT);
     for (int id = 0; id < MAX_CLIENT; ++id) {
-        mClients.emplace_back(std::make_unique<Client>());
+        mClients.emplace_back(std::make_shared<Client>());
     }
 }
 
@@ -68,7 +68,7 @@ void TCPServerCore::Join()
     ::WSACleanup();
 }
 
-std::vector<std::unique_ptr<Client>>& TCPServerCore::GetClients()
+std::vector<std::shared_ptr<Client>>& TCPServerCore::GetClients()
 {
     return mClients;
 }
@@ -77,7 +77,8 @@ byte TCPServerCore::AddClient(SOCKET clientSocket)
 {
 	for (byte id = 0; id < MAX_CLIENT; ++id) {
         {
-            std::lock_guard stateGuard{ mClients[id]->GetMutex() };
+            // 클라이언트의 상태를 변경하는 부분은 locking
+			std::lock_guard stateGuard{ mClients[id]->GetMutex() };
             if (mClients[id]->GetState() == CLIENT_STATE::JOINED) {
                 continue;
             }
@@ -96,7 +97,7 @@ byte TCPServerCore::AddClient(SOCKET clientSocket)
 
 void TCPServerCore::ExitClient(byte id)
 {
-    std::lock_guard stateGuard{ mClients[id]->GetMutex() };
+	std::lock_guard stateGuard{ mClients[id]->GetMutex() };
     if (mClients[id]->GetState() == CLIENT_STATE::JOINED) {
         auto& [ip, port] = mClients[id]->GetHostInfo();
         std::cout << "[클라이언트 연결 종료] IP: " << ip << " | PORT: " << port << "\n";

@@ -2,9 +2,10 @@
 
 #include <Windows.h>
 #include <functional>
+#include <array>
 
 inline constexpr unsigned short MAX_KEY_BUFFER = 256;
-inline constexpr void(*NULLFUNCTION)(float) = [](float=0){};
+inline constexpr void(*NULLFUNCTION)(float) = [](float=0){ };
 
 class KeyInput {
     inline static constexpr byte ACTIVE_HI_BIT = 0xF0;
@@ -46,12 +47,14 @@ public:
         }
     }
 
-    void RegisterKeyFn(unsigned short key, std::function<void(float)>&& fn = NULLFUNCTION)
+    [[maybe_unused]] std::function<void(float)> RegisterKeyFn(unsigned short key, std::function<void(float)>&& fn = NULLFUNCTION)
     {
+        auto prevFunction = mExecutionFn[key];
         mExecutionFn[key] = fn;
+        return prevFunction;
     }
 
 private:
     byte mKeyInfo[MAX_KEY_BUFFER]{ };
-    std::unordered_map<unsigned short, std::function<void(float) >> mExecutionFn{ };
+    std::array<std::function<void(float)>, 256> mExecutionFn{ };
 };

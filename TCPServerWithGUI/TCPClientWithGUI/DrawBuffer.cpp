@@ -45,7 +45,7 @@ std::pair<LONG, LONG> DrawBuffer::GetCameraLeftTop() const
 // Backbuffer 리턴
 HDC DrawBuffer::GetMemDC() const
 {
-	return mMemDC;
+	return mMemDC; 
 }
 
 bool DrawBuffer::IsInCamera(Position objectPos) const
@@ -54,19 +54,19 @@ bool DrawBuffer::IsInCamera(Position objectPos) const
 		(mValidBufferRect.top <= objectPos.y and mValidBufferRect.bottom >= objectPos.y);		/* check in Y */
 }
 
-void DrawBuffer::DrawString(std::string_view str, int x, int y)
+void DrawBuffer::DrawString(std::string_view str, const int x, const int y) const
 {
 	auto [cameraLeft, cameraTop] = GetCameraLeftTop();
 	TextOutA(mMemDC, cameraLeft + x, cameraTop + y, str.data(), static_cast<int>(str.size()));
 }
 
-void DrawBuffer::CleanupBuffer()
+void DrawBuffer::CleanupBuffer() const
 {
 	FillRect(mMemDC, &mValidBufferRect, (HBRUSH)GetStockObject(WHITE_BRUSH));
 }
 
 // 백버퍼 픽셀 초기화
-void DrawBuffer::CopyBufferMemToMain()
+void DrawBuffer::CopyBufferMemToMain() const
 {
 	auto [left, top, right, bottom] = mWindowInfo.windowRect;
 

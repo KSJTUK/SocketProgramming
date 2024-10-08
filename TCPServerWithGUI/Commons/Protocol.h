@@ -9,7 +9,7 @@
 #include <chrono>
 #include "Endian.h"
 
-#define USE_LOOP_BACK 0
+#define USE_LOOP_BACK 1
 
 // 인라인 상수 정의
 #if USE_LOOP_BACK

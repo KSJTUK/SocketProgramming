@@ -24,7 +24,7 @@ public:
 	void Join();
 
 	/** Getter **/
-	std::vector<std::unique_ptr<Client>>& GetClients();
+	std::vector<std::shared_ptr<Client>>& GetClients();
 
 	/** 클라이언트 입장 퇴장 처리 **/
 	byte AddClient(SOCKET clientSocket);
@@ -63,7 +63,7 @@ private:
 	std::vector<std::thread> mClientServiceThreads;
 
 	// 클라이언트의 개수를 고정해둔다면 굳이 map을 쓸 필요가 있는가?
-	// - 24.09.23 std::vector로 변경
+	// - 24.09.23 std::vector로 변경 - 24.10.03 viewList 구현을 위해 shared_ptr로 변경
 	/* 공유 변수 Vector */
-	std::vector<std::unique_ptr<Client>> mClients;
+	std::vector<std::shared_ptr<Client>> mClients;
 };
