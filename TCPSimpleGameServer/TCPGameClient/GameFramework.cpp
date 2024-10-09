@@ -86,7 +86,7 @@ void GameFramework::SetMouseCapture(bool captured)
 // 그리기에 필요한 객체들을 생성하는 함수
 void GameFramework::CreateObjects()
 {
-    mDrawBuffer = std::make_shared<DrawBuffer>(mWindowInfo);
+    mDrawBuffer = std::make_shared<DrawBuffer>(mWindowInfo, RGB(127, 127, 127));
 }
 
 std::shared_ptr<DrawBuffer> GameFramework::GetDrawBuffer() const

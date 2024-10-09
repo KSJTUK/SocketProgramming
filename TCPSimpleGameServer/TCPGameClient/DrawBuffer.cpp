@@ -3,8 +3,9 @@
 
 DrawBuffer::DrawBuffer() = default;
 
-DrawBuffer::DrawBuffer(const WindowInfo& windowInfo)
-	: mWindowInfo{ windowInfo }
+DrawBuffer::DrawBuffer(const WindowInfo& windowInfo, DWORD bgColor)
+	: mWindowInfo{ windowInfo },
+	mBackGroundColor{ bgColor }
 {
 	// 메인 DC를 얻어오고 호환되는 백버퍼 생성
 	mMainFrameDC = GetDC(mWindowInfo.windowHandle);
@@ -27,6 +28,11 @@ void DrawBuffer::SetCameraPosition(Position cameraPosition)
 	// 카메라 위치를 기준으로 복사할 월드의 영역을 설정
 	auto [left, top] = GetCameraLeftTop();
 	mValidBufferRect = { left, top, left + mWindowInfo.windowRect.right, top + mWindowInfo.windowRect.bottom };
+}
+
+void DrawBuffer::SetBackGroundColor(DWORD bgColor)
+{
+	mBackGroundColor = bgColor;
 }
 
 Position DrawBuffer::GetCameraPosition() const
@@ -60,9 +66,12 @@ void DrawBuffer::DrawString(std::string_view str, const int x, const int y) cons
 	TextOutA(mMemDC, cameraLeft + x, cameraTop + y, str.data(), static_cast<int>(str.size()));
 }
 
-void DrawBuffer::CleanupBuffer() const
+void DrawBuffer::CleanupBuffer()
 {
-	FillRect(mMemDC, &mValidBufferRect, (HBRUSH)GetStockObject(WHITE_BRUSH));
+	auto [l, t, r, b] = mValidBufferRect;
+	SetBrush(mBackGroundColor);
+	Rectangle(mMemDC, l, t, r, b);
+	ResetBrush();
 }
 
 // 백버퍼 픽셀 초기화
@@ -74,4 +83,15 @@ void DrawBuffer::CopyBufferMemToMain() const
 	auto [srcX, srcY] = GetCameraLeftTop();
 
 	BitBlt(mMainFrameDC, 0, 0, right, bottom, mMemDC, srcX, srcY, SRCCOPY);
+}
+
+void DrawBuffer::SetBrush(DWORD color)
+{
+	mOwnBrush = reinterpret_cast<HBRUSH>(SelectObject(mMemDC, CreateSolidBrush(color)));
+}
+
+void DrawBuffer::ResetBrush() const
+{
+	HBRUSH oldBrush = reinterpret_cast<HBRUSH>(SelectObject(mMemDC, mOwnBrush));
+	DeleteObject(oldBrush);
 }
