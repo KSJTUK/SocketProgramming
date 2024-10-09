@@ -26,9 +26,16 @@
 #include <list>
 #include <unordered_map>
 #include <vector>
+#include <array>
+#include <functional>
 
 #include <thread>
 #include <mutex>
+#include <atomic>
+
+#include "Protocol.h"
+#include "Macros.h"
+#include "Random.h"
 
 #define NETWORK_DEBUG 1
 

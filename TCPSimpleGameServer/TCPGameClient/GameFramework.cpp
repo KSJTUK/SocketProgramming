@@ -1,7 +1,13 @@
 #include "pch.h"
 #include "GameFramework.h"
 #include "Resource.h"
+#include "ServerService.h"
+
+#include "Timer.h"
+#include "Input.h"
 #include "DrawBuffer.h"
+#include "Shape.h"
+#include "Player.h"
 
 /* ----------------------------------------
 *
@@ -65,11 +71,36 @@ bool GameFramework::Init(HINSTANCE instanceHandle)
     CreateMyWindow();
 
     CreateObjects();
+
+    // 연결에 실패하면 바로 종료
+    bool connectSuccess = mServerService->ConnectToServer();
+    if (not connectSuccess) {
+        return false;
+    }
+
+    mServerService->CreateRecvThread();
+
+    // 서버에 접속했다면 자신의 id를 부여받을 때까지 대기
+    // 릴리즈모드에서의 컴파일러 최적화 때문에 volatile 함수로 설계
+    while (NULL_CLIENT_ID == mServerService->GetId());
+
+    // 최초 접속시 자신의 위치를 다른 클라이언트에게 알리기위해 서버에 전송
+    auto [playerX, playerY] = mPlayer->GetPosition();
+    mServerService->Send<PacketPlayerJoin>(PACKET_PLAYER_JOIN, playerX, playerY);
+
     return true;
 }
 
 void GameFramework::Destroy()
 {
+    mServerService->Send<PacketPlayerExit>(PACKET_PLAYER_EXIT);
+
+    // TODO
+    mServerService->Join();
+    mServerService.reset();
+
+    mTimer.reset();
+    mServerService.reset();
     mDrawBuffer.reset();
 }
 
@@ -86,12 +117,86 @@ void GameFramework::SetMouseCapture(bool captured)
 // 그리기에 필요한 객체들을 생성하는 함수
 void GameFramework::CreateObjects()
 {
+    // shared_ptr
+    mKeyInput = std::make_shared<KeyInput>();
     mDrawBuffer = std::make_shared<DrawBuffer>(mWindowInfo, RGB(127, 127, 127));
+
+    // unique_ptr
+    mTimer = std::make_unique<Timer>();
+    mServerService = std::make_unique<ServerService>();
+    mPlayer = std::make_unique<Player>(true);
+
+    // 플레이어의 키 입력처리 함수들을 등록
+    mPlayer->RegisterExecutionFn();
+
+    // 플레이어의 시작 위치를 랜덤하게 지정
+    auto [minX, minY, maxX, maxY] = mWindowInfo.windowRect;
+    mPlayer->SetPosition(
+        static_cast<float>(Random::GetUniformRandom(minX, maxX)),
+        static_cast<float>(Random::GetUniformRandom(minY, maxY))
+    );
+
+    CreatePointsFromFile();
+}
+
+void GameFramework::JoinOtherPlayer(byte id, float x, float y)
+{
+    std::lock_guard playerGuard{ mPlayerLock };
+    // 플레이어 추가
+    mOtherPlayers.emplace(id, std::make_unique<Player>(x, y));
+}
+
+void GameFramework::UpdateJoinedPlayer(byte id, Position pos)
+{
+    std::lock_guard playerGuard{ mPlayerLock };
+    // 해당 플레이어 정보 업데이트
+    if (mOtherPlayers.contains(id)) {
+        mOtherPlayers[id]->SetPosition(pos);
+    }
+}
+
+void GameFramework::ExitPlayer(byte id)
+{
+    std::lock_guard playerGuard{ mPlayerLock };
+    // Exit 패킷이 오는 경우 해당 id 플레이어가 존재하는지 확인 후 지운다.
+    if (mOtherPlayers.contains(id)) {
+        mOtherPlayers.erase(id);
+    }
+}
+
+void GameFramework::PingResult(std::chrono::high_resolution_clock::time_point timeSent)
+{
+    unsigned long long latency = std::chrono::duration_cast<std::chrono::milliseconds>(mTimer->GetCurrentTick() - timeSent).count() / 2;
+    mRecvTimeLatency.store(latency);
+}
+
+std::shared_ptr<KeyInput> GameFramework::GetKeyInput() const
+{
+    return mKeyInput;
 }
 
 std::shared_ptr<DrawBuffer> GameFramework::GetDrawBuffer() const
 {
     return mDrawBuffer;
+}
+
+void GameFramework::CreatePointsFromFile()
+{
+    std::ifstream in{ "Entities.bin", std::ios::binary };
+    if (not in) {
+        return;
+    }
+
+    size_t numOfPoints{ };
+    in.read(reinterpret_cast<char*>(&numOfPoints), sizeof(size_t));
+
+    std::vector<Position> positions(numOfPoints);
+    in.read(reinterpret_cast<char*>(positions.data()), numOfPoints * sizeof(Position));
+
+    mShapes.reserve(numOfPoints);
+    for (const auto& position : positions) {
+        mShapes.emplace_back(std::make_unique<Square>(position, 5, 5, mDrawBuffer));
+    }
 }
 
 // 마우스 메시지 처리 함수
@@ -131,11 +236,47 @@ void GameFramework::OnProcessingKeyboard(HWND hWnd, UINT message, WPARAM wParam,
 // 업데이트 및 렌더링 함수
 void GameFramework::Update()
 {
+    mTimer->Update();
+    const float deltaTime = mTimer->GetDeltaTime();
+
+    // 현재 프로세스가 아닌 다른 프로세스에서의 입력은 감지하지 않도록 설정
+    if (mKeyboardFocused) {
+        mKeyInput->Input(deltaTime);
+    }
+
+    mServerService->Send<PacketPing>(PACKET_PING, mTimer->GetCurrentTick());
+
+    mPlayer->Update(deltaTime);
+    mDrawBuffer->SetCameraPosition(mPlayer->GetPosition());
+
+    auto [playerX, playerY] = mPlayer->GetPosition();
+    mServerService->Send<PacketPosition2D>(PACKET_POSITION2D, playerX, playerY);
+
+    for (auto& [id, otherPlayer] : mOtherPlayers) {
+        otherPlayer->Update(deltaTime);
+    }
 }
 
 void GameFramework::Render()
 {
     mDrawBuffer->CleanupBuffer();
+
+    gGameFramework.GetDrawBuffer()->DrawString(std::to_string(mTimer->GetFPS()), 10, 50);
+
+    for (auto& [id, otherPlayer] : mOtherPlayers) {
+        otherPlayer->Render();
+    }
+
+    for (auto& shape : mShapes) {
+        shape->Render();
+    }
+
+    mPlayer->Render();
+
+    mDrawBuffer->DrawString("FPS: "s + std::to_string(mTimer->GetFPS()), 10, 20);
+    mDrawBuffer->DrawString("Delta Time: "s + std::to_string(mTimer->GetDeltaTime()) + "s"s, 10, 50);
+    mDrawBuffer->DrawString("지연률"s + std::to_string(mRecvTimeLatency) + "ms"s, 10, 80);
+    mDrawBuffer->DrawString("다른 클라이언트: "s + std::to_string(mOtherPlayers.size()), 10, 110);
 
     mDrawBuffer->CopyBufferMemToMain();
 }

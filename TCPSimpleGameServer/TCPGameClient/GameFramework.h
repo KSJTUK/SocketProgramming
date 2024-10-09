@@ -73,6 +73,23 @@ private:
 	std::wstring	mWindowName{ L"GUI 클라이언트" };
 	std::wstring	mWindowClassName{ L"GUI 클라이언트" };
 
+	// 타이머
+	std::unique_ptr<class Timer> mTimer{ };
+
 	// 렌더링 처리
 	std::shared_ptr<class DrawBuffer> mDrawBuffer{ };
+
+	// 키입력 처리
+	std::shared_ptr<class KeyInput> mKeyInput{ };
+
+	// 서버 데이터 송수신 처리
+	std::unique_ptr<class ServerService> mServerService{ };
+
+	// draw test
+	std::unique_ptr<class Player> mPlayer{ };
+	std::vector<std::unique_ptr<class Shape>> mShapes;
+
+	/* 공유 변수 */
+	std::unordered_map<byte, std::unique_ptr<class Player>> mOtherPlayers{ };
+	std::mutex mPlayerLock{ };
 };
