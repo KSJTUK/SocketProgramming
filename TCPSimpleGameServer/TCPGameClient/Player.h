@@ -13,6 +13,7 @@ class Player {
 public:
 	Player();
 	Player(float x, float y);
+	Player(const Position pos);
 	~Player();
 
 public:

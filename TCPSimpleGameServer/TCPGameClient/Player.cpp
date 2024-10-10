@@ -20,6 +20,13 @@ Player::Player(float x, float y)
 {
 }
 
+Player::Player(const Position pos)
+	: mPosition{ pos },
+	mShape{ std::make_unique<Square>(mPosition, DEFAUT_SIZE, DEFAUT_SIZE, gGameFramework.GetDrawBuffer()) },
+	mVelocity{ DEFAULT_SPEED }
+{
+}
+
 Player::~Player()
 {
 }

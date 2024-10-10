@@ -51,16 +51,14 @@ struct PacketPlayerInput : public PacketBase {
 };
 
 struct PacketPlayerJoin : public PacketBase {
-	float x; 
-	float y;
+	Position pos;
 };
 
 struct PacketPlayerExit : public PacketBase {
 };
 
 struct PacketPosition2D : public PacketBase {
-	float x;
-	float y;
+	Position pos;
 };
 
 #pragma pack(pop)

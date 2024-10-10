@@ -1,17 +1,17 @@
 #include "pch.h"
-#include "ServerCore.h"
+#include "GameServer.h"
 #include "Listener.h"
 
 /* ----------------------------------------
 *
-*				ServerCore
+*				GameServer
 *
   ---------------------------------------- */
 
-ServerCore::ServerCore() = default;
-ServerCore::~ServerCore() = default;
+GameServer::GameServer() = default;
+GameServer::~GameServer() = default;
 
-void ServerCore::CreateCoreObjects()
+void GameServer::CreateCoreObjects()
 {
     mListener = std::make_unique<Listener>(SERVER_IP, SERVER_PORT);
     for (int id = 0; id < MAX_CLIENT; ++id) {
@@ -19,7 +19,7 @@ void ServerCore::CreateCoreObjects()
     }
 }
 
-void ServerCore::StartAccept()
+void GameServer::StartAccept()
 {
     while (true) {
         SOCKET clientSocket = mListener->Accept();
@@ -37,15 +37,15 @@ void ServerCore::StartAccept()
         mClientServiceThreads.push_back(std::thread{ [=]()
             {
                 byte id = addedId;
-                mClients[id]->Send<PacketPlayerConnect>(PACKET_PLAYER_CONNECT);
+                mClients[id]->GetTransceiver().Send<PacketPlayerConnect>(PACKET_PLAYER_CONNECT, id);
 
-                mClients[id]->Recv();
+                mClients[id]->GetTransceiver().Recv();
             }
-            });
+        });
     }
 }
 
-void ServerCore::Init()
+void GameServer::Init()
 {
     WSAData wsaData;
     ASSERT(0 == ::WSAStartup(MAKEWORD(2, 2), &wsaData), "WSAStartup Failure");
@@ -54,7 +54,7 @@ void ServerCore::Init()
     StartAccept();
 }
 
-void ServerCore::Join()
+void GameServer::Join()
 {
     for (std::thread& thread : mClientServiceThreads) {
         if (thread.joinable()) {
@@ -65,12 +65,12 @@ void ServerCore::Join()
     ::WSACleanup();
 }
 
-std::vector<std::shared_ptr<Client>>& ServerCore::GetClients()
+std::vector<std::shared_ptr<Client>>& GameServer::GetClients()
 {
     return mClients;
 }
 
-byte ServerCore::AddClient(SOCKET clientSocket)
+byte GameServer::AddClient(SOCKET clientSocket)
 {
     for (byte id = 0; id < MAX_CLIENT; ++id) {
         {
@@ -92,18 +92,18 @@ byte ServerCore::AddClient(SOCKET clientSocket)
     return NULL_CLIENT_ID;
 }
 
-void ServerCore::ExitClient(byte id)
+void GameServer::ExitClient(byte id)
 {
     std::lock_guard stateGuard{ mClients[id]->GetMutex() };
     if (mClients[id]->GetState() == CLIENT_STATE::JOINED) {
-        auto& [ip, port] = mClients[id]->GetHostInfo();
+		auto& [ip, port] = mClients[id]->GetTransceiver().GetHostInfo();
         std::cout << "[클라이언트 연결 종료] IP: " << ip << " | PORT: " << port << "\n";
-        mClients[id]->CloseSocket();
+        mClients[id]->GetTransceiver().CloseSocket();
         mClients[id]->Exit();
     }
 }
 
-void ServerCore::SendOtherClientsSession(byte targetId)
+void GameServer::SendOtherClientsSession(byte targetId)
 {
     PacketPlayerJoin packet{ sizeof(PacketPlayerJoin), PACKET_PLAYER_JOIN };
     for (int id = 0; id < MAX_CLIENT; ++id) {
@@ -111,7 +111,12 @@ void ServerCore::SendOtherClientsSession(byte targetId)
         if (mClients[id]->GetState() == CLIENT_STATE::JOINED) {
             packet.senderId = id;
             auto [x, y] = mClients[id]->GetPosition();
-            mClients[targetId]->Send(&packet);
+            mClients[targetId]->GetTransceiver().Send(&packet);
         }
     }
+}
+
+void GameServer::UpdatePlayer(byte id, const Position pos)
+{
+    mClients[id]->SetPosition(pos);
 }

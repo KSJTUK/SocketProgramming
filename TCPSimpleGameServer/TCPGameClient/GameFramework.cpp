@@ -129,11 +129,11 @@ void GameFramework::CreateObjects()
     CreatePointsFromFile();
 }
 
-void GameFramework::JoinOtherPlayer(byte id, float x, float y)
+void GameFramework::JoinOtherPlayer(byte id, const Position pos)
 {
     std::lock_guard playerGuard{ mPlayerLock };
     // 플레이어 추가
-    mOtherPlayers.emplace(id, std::make_unique<Player>(x, y));
+    mOtherPlayers.emplace(id, std::make_unique<Player>(pos));
 }
 
 void GameFramework::UpdateJoinedPlayer(byte id, Position pos)

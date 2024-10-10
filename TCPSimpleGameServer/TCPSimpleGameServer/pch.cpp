@@ -1,3 +1,3 @@
 #include "pch.h"
 
-ServerCore gServerCore;
+GameServer gGameServer;

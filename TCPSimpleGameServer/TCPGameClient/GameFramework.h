@@ -31,7 +31,7 @@ public:
 	void CreateObjects();
 
 	// 다른 플레이어 접속, 퇴장, 업데이트 처리
-	void JoinOtherPlayer(byte id, float x, float y);
+	void JoinOtherPlayer(byte id, const Position pos);
 	void UpdateJoinedPlayer(byte id, Position pos);
 	void ExitPlayer(byte id);
 

@@ -12,11 +12,11 @@ enum OBJECT_TYPE {
 
 class Object {
 public:
-	Object(Position pos, SIZE boxSize);
+	Object(const Position pos, SIZE boxSize);
 	~Object();
 
 public:
-	void SetPosition(Position pos);
+	void SetPosition(const Position pos);
 	Position GetPosition() const;
 
 	RECT GetBox() const;

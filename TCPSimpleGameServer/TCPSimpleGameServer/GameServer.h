@@ -1,7 +1,7 @@
 #pragma once
 
 /* ----------------------------------------
-*				TCPServerCore
+*				GameServer
 *
 * 서버에서 할 기본적인 연산, 연결설정, 플레이어 추가,
 * 등등을 수행할 클래스
@@ -12,10 +12,10 @@
 
 #include "Client.h"
 
-class ServerCore {
+class GameServer {
 public:
-	ServerCore();
-	~ServerCore();
+	GameServer();
+	~GameServer();
 
 public:
 	/** 초기화 **/
@@ -33,6 +33,9 @@ public:
 	/** 새로 들어온 플레이어에게 기존 플레이어의 정보를 보냄 **/
 	void SendOtherClientsSession(byte targetId);
 
+	// 임시 코드, 분리한 기능이 잘 작동하는지 확인용
+	void UpdatePlayer(byte id, const Position pos);
+
 	/* 모든 클라이언트에게 같은 패킷을 보냄 */
 	template <typename PacketType> requires std::is_base_of_v<PacketBase, PacketType>
 	void Broadcast(byte type, byte senderId, char* data)
@@ -49,7 +52,7 @@ public:
 				continue;
 			}
 
-			mClients[id]->Send(&packet);
+			mClients[id]->GetTransceiver().Send(&packet);
 		}
 	}
 

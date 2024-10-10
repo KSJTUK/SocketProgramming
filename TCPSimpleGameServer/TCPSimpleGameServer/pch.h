@@ -29,9 +29,9 @@
 inline constexpr byte MAX_CLIENT = 64;
 inline constexpr byte NULL_CLIENT_ID = 0xff;
 
-inline constexpr SIZE worldSize = { 5000, 5000 };
-inline constexpr SIZE worldCellSize = { 100, 100 };
+inline constexpr SIZE WORLD_SIZE = { 5000, 5000 };
+inline constexpr SIZE WORLD_CELL_SIZE = { 100, 100 };
 
-#include "ServerCore.h"
+#include "GameServer.h"
 
-extern ServerCore gServerCore;
+extern GameServer gGameServer;

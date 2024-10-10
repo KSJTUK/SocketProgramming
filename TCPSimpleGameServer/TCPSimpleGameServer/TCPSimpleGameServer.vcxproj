@@ -20,7 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp" />
-    <ClCompile Include="ClientSession.cpp" />
     <ClCompile Include="Listener.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Object.cpp" />
@@ -29,18 +28,19 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="ProcessKeyInput.cpp" />
-    <ClCompile Include="ServerCore.cpp" />
+    <ClCompile Include="GameServer.cpp" />
     <ClCompile Include="Timer.cpp" />
+    <ClCompile Include="Transceiver.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h" />
-    <ClInclude Include="ClientSession.h" />
     <ClInclude Include="Listener.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ProcessKeyInput.h" />
-    <ClInclude Include="ServerCore.h" />
+    <ClInclude Include="GameServer.h" />
     <ClInclude Include="Timer.h" />
+    <ClInclude Include="Transceiver.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

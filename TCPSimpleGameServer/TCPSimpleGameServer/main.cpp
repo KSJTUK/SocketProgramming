@@ -2,7 +2,7 @@
 
 int main(int argc, char* argv[])
 {
-	gServerCore.Init();
+	gGameServer.Init();
 
-	gServerCore.Join();
+	gGameServer.Join();
 }

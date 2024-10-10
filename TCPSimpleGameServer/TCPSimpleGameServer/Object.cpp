@@ -2,7 +2,7 @@
 #include "Object.h"
 #include "ProcessKeyInput.h"
 
-Object::Object(Position pos, SIZE boxSize)
+Object::Object(const Position pos, SIZE boxSize)
 	: mPos{ pos },
 	mBoxSize{ boxSize },
 	mVelocity{ 0.f }
@@ -13,7 +13,7 @@ Object::~Object()
 {
 }
 
-void Object::SetPosition(Position pos)
+void Object::SetPosition(const Position pos)
 {
 	mPos = pos;
 }
@@ -63,7 +63,7 @@ void Object::HandleCollision(Object* other)
 inline constexpr float WORLD_BORDER = 100.f;
 
 Player::Player()
-	: Object{ { Random::GetUniformRandom(WORLD_BORDER, worldSize.cx - WORLD_BORDER), Random::GetUniformRandom(WORLD_BORDER, worldSize.cy - WORLD_BORDER) }, { DEFAULT_SIZE, DEFAULT_SIZE } },
+	: Object{ { Random::GetUniformRandom(WORLD_BORDER, WORLD_SIZE.cx - WORLD_BORDER), Random::GetUniformRandom(WORLD_BORDER, WORLD_SIZE.cy - WORLD_BORDER) }, { DEFAULT_SIZE, DEFAULT_SIZE } },
 	mInputProcessor{ std::make_unique<ProcessKeyInput>() },
 	mVelocity{ DEFAULT_SPEED }
 {
