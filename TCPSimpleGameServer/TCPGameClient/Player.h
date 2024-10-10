@@ -12,14 +12,11 @@ class Player {
 
 public:
 	Player();
-	Player(bool playable);
 	Player(float x, float y);
-	Player(float x, float y, bool playable);
 	~Player();
 
 public:
 	// Setter
-	void SetPosition(float x, float y);
 	void SetPosition(const Position& position);
 	void SetDirection(char x, char y);
 	void SetDirection(Direction2D dir);
@@ -31,12 +28,6 @@ public:
 	float GetVelocity() const { return mVelocity; }
 
 	void RegisterExecutionFn();
-
-	// 
-	void MoveLeft(float deltaTime);
-	void MoveUp(float deltaTime);
-	void MoveRight(float deltaTime);
-	void MoveDown(float deltaTime);
 
 	void Update(const float deltaTime);
 	void Render();

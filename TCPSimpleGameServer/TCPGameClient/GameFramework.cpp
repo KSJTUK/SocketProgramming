@@ -73,34 +73,32 @@ bool GameFramework::Init(HINSTANCE instanceHandle)
     CreateObjects();
 
     // 연결에 실패하면 바로 종료
-    bool connectSuccess = mServerService->ConnectToServer();
+    bool connectSuccess = gServerService.ConnectToServer();
     if (not connectSuccess) {
         return false;
     }
 
-    mServerService->CreateRecvThread();
+    gServerService.CreateRecvThread();
 
     // 서버에 접속했다면 자신의 id를 부여받을 때까지 대기
     // 릴리즈모드에서의 컴파일러 최적화 때문에 volatile 함수로 설계
-    while (NULL_CLIENT_ID == mServerService->GetId());
+    while (NULL_CLIENT_ID == gServerService.GetId());
 
     // 최초 접속시 자신의 위치를 다른 클라이언트에게 알리기위해 서버에 전송
     auto [playerX, playerY] = mPlayer->GetPosition();
-    mServerService->Send<PacketPlayerJoin>(PACKET_PLAYER_JOIN, playerX, playerY);
+    gServerService.Send<PacketPlayerJoin>(PACKET_PLAYER_JOIN, playerX, playerY);
 
     return true;
 }
 
 void GameFramework::Destroy()
 {
-    mServerService->Send<PacketPlayerExit>(PACKET_PLAYER_EXIT);
+    gServerService.Send<PacketPlayerExit>(PACKET_PLAYER_EXIT);
 
     // TODO
-    mServerService->Join();
-    mServerService.reset();
+    gServerService.Join();
 
     mTimer.reset();
-    mServerService.reset();
     mDrawBuffer.reset();
 }
 
@@ -123,18 +121,10 @@ void GameFramework::CreateObjects()
 
     // unique_ptr
     mTimer = std::make_unique<Timer>();
-    mServerService = std::make_unique<ServerService>();
-    mPlayer = std::make_unique<Player>(true);
+    mPlayer = std::make_unique<Player>();
 
     // 플레이어의 키 입력처리 함수들을 등록
     mPlayer->RegisterExecutionFn();
-
-    // 플레이어의 시작 위치를 랜덤하게 지정
-    auto [minX, minY, maxX, maxY] = mWindowInfo.windowRect;
-    mPlayer->SetPosition(
-        static_cast<float>(Random::GetUniformRandom(minX, maxX)),
-        static_cast<float>(Random::GetUniformRandom(minY, maxY))
-    );
 
     CreatePointsFromFile();
 }
@@ -244,13 +234,13 @@ void GameFramework::Update()
         mKeyInput->Input(deltaTime);
     }
 
-    mServerService->Send<PacketPing>(PACKET_PING, mTimer->GetCurrentTick());
+    gServerService.Send<PacketPing>(PACKET_PING, mTimer->GetCurrentTick());
 
     mPlayer->Update(deltaTime);
     mDrawBuffer->SetCameraPosition(mPlayer->GetPosition());
 
     auto [playerX, playerY] = mPlayer->GetPosition();
-    mServerService->Send<PacketPosition2D>(PACKET_POSITION2D, playerX, playerY);
+    gServerService.Send<PacketPosition2D>(PACKET_POSITION2D, playerX, playerY);
 
     for (auto& [id, otherPlayer] : mOtherPlayers) {
         otherPlayer->Update(deltaTime);

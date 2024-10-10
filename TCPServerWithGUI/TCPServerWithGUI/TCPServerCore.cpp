@@ -87,7 +87,6 @@ byte TCPServerCore::AddClient(SOCKET clientSocket)
 
 		Address::NetHostInfo hostInfo = Address::GetHostInfo(clientSocket);
 
-
 		std::cout << "[클라이언트 접속] IP: " << hostInfo.ip << " | PORT: " << hostInfo.port << "\n";
 		return id;
 	}

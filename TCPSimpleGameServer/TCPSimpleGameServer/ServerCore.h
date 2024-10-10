@@ -62,8 +62,5 @@ private:
 	std::unique_ptr<class Listener> mListener;
 	std::vector<std::thread> mClientServiceThreads;
 
-	// 클라이언트의 개수를 고정해둔다면 굳이 map을 쓸 필요가 있는가?
-	// - 24.09.23 std::vector로 변경 - 24.10.03 viewList 구현을 위해 shared_ptr로 변경
-	/* 공유 변수 Vector */
 	std::vector<std::shared_ptr<Client>> mClients;
 };

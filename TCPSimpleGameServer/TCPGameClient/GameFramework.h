@@ -82,9 +82,6 @@ private:
 	// 키입력 처리
 	std::shared_ptr<class KeyInput> mKeyInput{ };
 
-	// 서버 데이터 송수신 처리
-	std::unique_ptr<class ServerService> mServerService{ };
-
 	// draw test
 	std::unique_ptr<class Player> mPlayer{ };
 	std::vector<std::unique_ptr<class Shape>> mShapes;

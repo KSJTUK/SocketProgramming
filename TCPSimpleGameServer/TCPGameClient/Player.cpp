@@ -2,6 +2,7 @@
 #include "Player.h"
 #include "Shape.h"
 #include "GameFramework.h"
+#include "ServerService.h"
 #include "Input.h"
 #include "DrawBuffer.h"
 
@@ -12,14 +13,6 @@ Player::Player()
 {
 }
 
-Player::Player(bool playable)
-	: mPosition{ Random::GetUniformRandom(10.f, 1000.f), Random::GetUniformRandom(10.f, 800.f) },
-	mShape{ std::make_unique<Square>(mPosition, DEFAUT_SIZE, DEFAUT_SIZE, gGameFramework.GetDrawBuffer()) },
-	mVelocity{ DEFAULT_SPEED },
-	mPlayable{ playable }
-{
-}
-
 Player::Player(float x, float y)
 	: mPosition{ x, y },
 	mShape{ std::make_unique<Square>(mPosition, DEFAUT_SIZE, DEFAUT_SIZE, gGameFramework.GetDrawBuffer()) },
@@ -27,19 +20,8 @@ Player::Player(float x, float y)
 {
 }
 
-Player::Player(float x, float y, bool playable)
-	: mPosition{ x, y },
-	mShape{ std::make_unique<Square>(mPosition, DEFAUT_SIZE, DEFAUT_SIZE, gGameFramework.GetDrawBuffer()) },
-	mVelocity{ DEFAULT_SPEED },
-	mPlayable{ playable }
+Player::~Player()
 {
-}
-
-Player::~Player() = default;
-
-void Player::SetPosition(float x, float y)
-{
-	mPosition = { x, y };
 }
 
 void Player::SetPosition(const Position& position)
@@ -64,30 +46,10 @@ void Player::SetValocity(float velocity)
 
 void Player::RegisterExecutionFn()
 {
-	gGameFramework.GetKeyInput()->RegisterKeyFn(VK_LEFT, [=](float deltaTime) { MoveLeft(deltaTime); });
-	gGameFramework.GetKeyInput()->RegisterKeyFn(VK_RIGHT, [=](float deltaTime) { MoveRight(deltaTime); });
-	gGameFramework.GetKeyInput()->RegisterKeyFn(VK_UP, [=](float deltaTime) { MoveUp(deltaTime); });
-	gGameFramework.GetKeyInput()->RegisterKeyFn(VK_DOWN, [=](float deltaTime) { MoveDown(deltaTime); });
-}
-
-void Player::MoveLeft(float deltaTime)
-{
-	mPosition.x -= mVelocity * deltaTime;
-}
-
-void Player::MoveUp(float deltaTime)
-{
-	mPosition.y -= mVelocity * deltaTime;
-}
-
-void Player::MoveRight(float deltaTime)
-{
-	mPosition.x += mVelocity * deltaTime;
-}
-
-void Player::MoveDown(float deltaTime)
-{
-	mPosition.y += mVelocity * deltaTime;
+	gGameFramework.GetKeyInput()->RegisterKeyFn(VK_LEFT, [=](float deltaTime) { gServerService.Send<PacketPlayerInput>(PACKET_PLAYER_INPUT, VK_LEFT); });
+	gGameFramework.GetKeyInput()->RegisterKeyFn(VK_RIGHT, [=](float deltaTime) { gServerService.Send<PacketPlayerInput>(PACKET_PLAYER_INPUT, VK_RIGHT); });
+	gGameFramework.GetKeyInput()->RegisterKeyFn(VK_UP, [=](float deltaTime) { gServerService.Send<PacketPlayerInput>(PACKET_PLAYER_INPUT, VK_UP); });
+	gGameFramework.GetKeyInput()->RegisterKeyFn(VK_DOWN, [=](float deltaTime) { gServerService.Send<PacketPlayerInput>(PACKET_PLAYER_INPUT, VK_DOWN); });
 }
 
 void Player::Update(const float deltaTime)

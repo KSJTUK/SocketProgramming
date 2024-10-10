@@ -110,6 +110,9 @@ void Client::ProcessPacket(char* packet)
 		gServerCore.Broadcast<PacketPosition2D>(PACKET_POSITION2D, senderId, packet);
 		break;
 
+	case PACKET_PLAYER_INPUT:
+		break;
+
 	case PACKET_PLAYER_JOIN:
 	{
 		// 세션 업데이트

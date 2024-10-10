@@ -50,14 +50,5 @@ struct WindowInfo {
 	RECT windowRect;
 };
 
-struct Position {
-	float x;
-	float y;
-};
-
-struct Direction2D {
-	char x;
-	char y;
-};
-
 extern class GameFramework gGameFramework;
+extern class ServerService gServerService;

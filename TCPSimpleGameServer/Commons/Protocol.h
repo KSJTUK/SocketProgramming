@@ -7,7 +7,7 @@
 ----------------------------------*/
 
 #include <chrono>
-#include "Endian.h"
+#include "Types.h"
 
 #define USE_LOOP_BACK 1
 
@@ -24,6 +24,7 @@ using byte = unsigned char;
 enum {
 	PACKET_POSITION2D = 0,
 	PACKET_PING,
+	PACKET_PLAYER_INPUT,
 	PACKET_PLAYER_CONNECT,
 	PACKET_PLAYER_JOIN,
 	PACKET_PLAYER_EXIT,
@@ -43,6 +44,10 @@ struct PacketPing : public PacketBase {
 };
 
 struct PacketPlayerConnect : public PacketBase {
+};
+
+struct PacketPlayerInput : public PacketBase {
+	byte keyInput;
 };
 
 struct PacketPlayerJoin : public PacketBase {
