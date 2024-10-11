@@ -49,11 +49,12 @@ void GameServer::ProcessPacket(char* packet)
 void GameServer::Update()
 {
     static float updateDelay = 0.f;
+    static const float delayed = 1.0f / 60.0f;
 	mTimer->Update();
 	mDeltaTime = mTimer->GetDeltaTime();
 
     updateDelay += mDeltaTime;
-    if (updateDelay < 1.0f / 60.0f) {
+    if (updateDelay < delayed) {
         return;
     }
     mDeltaTime = updateDelay;
