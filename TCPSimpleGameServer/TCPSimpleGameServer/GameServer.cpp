@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "GameServer.h"
 #include "Listener.h"
+#include "Timer.h"
 
 /* ----------------------------------------
 *
@@ -11,15 +12,77 @@
 GameServer::GameServer() = default;
 GameServer::~GameServer() = default;
 
+void GameServer::ProcessPacket(char* packet)
+{
+    // PacketBase 구조체에서 1바이트는 size, 1바이트는 type, 1바이트는 송신자 id로 설정했음
+    byte size = packet[0];
+    byte type = packet[1];
+    byte senderId = packet[2];
+
+    switch (type) {
+    case PACKET_PLAYER_CONNECT:
+        Broadcast<PacketPlayerJoin>(PACKET_PLAYER_JOIN, senderId, packet);
+        SendOtherClientsSession(senderId);
+        break;
+
+    case PACKET_PLAYER_INPUT:
+        {
+            PacketPlayerInput* input = reinterpret_cast<PacketPlayerInput*>(packet);
+            mClients[senderId]->GetInputProcessor().KeyUpdate(input->keyInput, input->down);
+        }
+        break;
+
+    case PACKET_PLAYER_JOIN:
+        break;
+
+    case PACKET_PLAYER_EXIT:
+		Broadcast<PacketPlayerExit>(PACKET_PLAYER_EXIT, senderId, packet);
+        ExitClient(senderId);
+        break;
+
+    case PACKET_PING:
+        //Send<PacketPing>(PACKET_PING, senderId, packet);
+        break;
+    }
+}
+
+void GameServer::Update()
+{
+    static float updateDelay = 0.f;
+	mTimer->Update();
+	mDeltaTime = mTimer->GetDeltaTime();
+
+    updateDelay += mDeltaTime;
+    if (updateDelay < 1.0f / 60.0f) {
+        return;
+    }
+    mDeltaTime = updateDelay;
+
+    PacketPosition2D packet{ sizeof(PacketPosition2D), PACKET_POSITION2D, };
+    for (int clientId = 0; clientId < MAX_CLIENT; ++clientId) {
+        mClients[clientId]->Update(mDeltaTime.load());
+
+        std::lock_guard stateGuard{ mClients[clientId]->GetMutex() };
+        if (mClients[clientId]->GetState() == CLIENT_STATE::JOINED) {
+            std::unique_lock broadcastGuard{ mBroadcastLock };
+			packet.pos = mClients[clientId]->GetPosition();
+            Broadcast<PacketPosition2D>(PACKET_POSITION2D, clientId, reinterpret_cast<char*>(&packet));
+            broadcastGuard.unlock();
+        }
+    }
+    updateDelay = 0.0f;
+}
+
 void GameServer::CreateCoreObjects()
 {
     mListener = std::make_unique<Listener>(SERVER_IP, SERVER_PORT);
+    mTimer = std::make_unique<Timer>();
     for (int id = 0; id < MAX_CLIENT; ++id) {
         mClients.emplace_back(std::make_shared<Client>());
     }
 }
 
-void GameServer::StartAccept()
+void GameServer::Accept()
 {
     while (true) {
         SOCKET clientSocket = mListener->Accept();
@@ -51,7 +114,7 @@ void GameServer::Init()
     ASSERT(0 == ::WSAStartup(MAKEWORD(2, 2), &wsaData), "WSAStartup Failure");
 
     CreateCoreObjects();
-    StartAccept();
+    mAcceptThread = std::thread{ [=]() { Accept(); } };
 }
 
 void GameServer::Join()
@@ -62,6 +125,7 @@ void GameServer::Join()
         }
     }
 
+    mAcceptThread.join();
     ::WSACleanup();
 }
 
@@ -85,7 +149,7 @@ byte GameServer::AddClient(SOCKET clientSocket)
         Address::NetHostInfo hostInfo = Address::GetHostInfo(clientSocket);
 
 
-        std::cout << "[클라이언트 접속] IP: " << hostInfo.ip << " | PORT: " << hostInfo.port << "\n";
+        std::cout << "[클라이언트 접속" << " ID: "<< (int)id << "] IP: " << hostInfo.ip << " | PORT: " << hostInfo.port << "\n";
         return id;
     }
 
@@ -109,14 +173,9 @@ void GameServer::SendOtherClientsSession(byte targetId)
     for (int id = 0; id < MAX_CLIENT; ++id) {
         std::lock_guard stateGuard{ mClients[id]->GetMutex() };
         if (mClients[id]->GetState() == CLIENT_STATE::JOINED) {
-            packet.senderId = id;
-            auto [x, y] = mClients[id]->GetPosition();
+            packet.senderId = id; 
+            packet.pos = mClients[id]->GetPosition();
             mClients[targetId]->GetTransceiver().Send(&packet);
         }
     }
-}
-
-void GameServer::UpdatePlayer(byte id, const Position pos)
-{
-    mClients[id]->SetPosition(pos);
 }

@@ -15,14 +15,21 @@ public:
     ~ProcessKeyInput() = default;
 
 public:
-    byte& operator[](int idx)
+    void Update(const float deltaTime)
     {
-        return mKeyInfo[idx];
+        for (int key = 0; key < MAX_KEY_BUFFER; ++key) {
+            Execute(key, deltaTime);
+        }
     }
 
-    void Execute(int key, float deltaTime)
+    void KeyUpdate(int key, bool opt)
     {
-        if (mKeyInfo[key] & 0xF0) {
+        mKeyDown[key] = opt;
+    }
+
+    void Execute(int key, const float deltaTime)
+    {
+        if (mKeyDown[key]) {
             mExecutionFn[key](deltaTime);
         }
     }
@@ -35,6 +42,6 @@ public:
     }
 
 private:
-    byte mKeyInfo[MAX_KEY_BUFFER]{ };
-    std::array<std::function<void(float)>, 256> mExecutionFn{ };
+    bool mKeyDown[MAX_KEY_BUFFER]{ false };
+    std::array<std::function<void(float)>, MAX_KEY_BUFFER> mExecutionFn{ NULLFUNCTION };
 };

@@ -28,8 +28,6 @@ public:
 	Position GetPosition() const { return mPosition; }
 	float GetVelocity() const { return mVelocity; }
 
-	void RegisterExecutionFn();
-
 	void Update(const float deltaTime);
 	void Render();
 

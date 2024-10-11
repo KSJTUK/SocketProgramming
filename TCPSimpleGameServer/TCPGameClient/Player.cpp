@@ -51,14 +51,6 @@ void Player::SetValocity(float velocity)
 	mVelocity = velocity;
 }
 
-void Player::RegisterExecutionFn()
-{
-	gGameFramework.GetKeyInput()->RegisterKeyFn(VK_LEFT, [=](float deltaTime) { gServerService.Send<PacketPlayerInput>(PACKET_PLAYER_INPUT, VK_LEFT); });
-	gGameFramework.GetKeyInput()->RegisterKeyFn(VK_RIGHT, [=](float deltaTime) { gServerService.Send<PacketPlayerInput>(PACKET_PLAYER_INPUT, VK_RIGHT); });
-	gGameFramework.GetKeyInput()->RegisterKeyFn(VK_UP, [=](float deltaTime) { gServerService.Send<PacketPlayerInput>(PACKET_PLAYER_INPUT, VK_UP); });
-	gGameFramework.GetKeyInput()->RegisterKeyFn(VK_DOWN, [=](float deltaTime) { gServerService.Send<PacketPlayerInput>(PACKET_PLAYER_INPUT, VK_DOWN); });
-}
-
 void Player::Update(const float deltaTime)
 {
 	mShape->SetPosition(mPosition);

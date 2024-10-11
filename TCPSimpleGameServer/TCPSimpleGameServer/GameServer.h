@@ -33,9 +33,6 @@ public:
 	/** 새로 들어온 플레이어에게 기존 플레이어의 정보를 보냄 **/
 	void SendOtherClientsSession(byte targetId);
 
-	// 임시 코드, 분리한 기능이 잘 작동하는지 확인용
-	void UpdatePlayer(byte id, const Position pos);
-
 	/* 모든 클라이언트에게 같은 패킷을 보냄 */
 	template <typename PacketType> requires std::is_base_of_v<PacketBase, PacketType>
 	void Broadcast(byte type, byte senderId, char* data)
@@ -47,22 +44,39 @@ public:
 		packet.senderId = senderId;
 
 		for (byte id = 0; id < MAX_CLIENT; ++id) {
-			std::lock_guard stateLock{ mClients[id]->GetMutex() };
-			if (mClients[id]->GetState() == CLIENT_STATE::EXITED) {
+			if (senderId == id) {
+				mClients[id]->GetTransceiver().Send(&packet);
 				continue;
 			}
 
-			mClients[id]->GetTransceiver().Send(&packet);
+			std::lock_guard stateLock{ mClients[id]->GetMutex() };
+			if (mClients[id]->GetState() == CLIENT_STATE::JOINED) {
+				mClients[id]->GetTransceiver().Send(&packet);
+			}
 		}
 	}
+
+	void ProcessPacket(char* packet);
+
+public:
+	/* 게임 월드 작업 관련 함수들 */
+	void Update();
 
 private:
 	/* 연결설정에 필요한 함수들 */
 	void CreateCoreObjects();
-	void StartAccept();
+	void Accept();
+
+public:
+	inline static std::atomic<float> mDeltaTime{ };
 
 private:
 	std::unique_ptr<class Listener> mListener;
+	std::unique_ptr<class Timer> mTimer;
+
+	std::mutex mBroadcastLock;
+
+	std::thread mAcceptThread;
 	std::vector<std::thread> mClientServiceThreads;
 
 	std::vector<std::shared_ptr<Client>> mClients;

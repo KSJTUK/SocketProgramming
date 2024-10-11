@@ -84,9 +84,7 @@ bool GameFramework::Init(HINSTANCE instanceHandle)
     // 릴리즈모드에서의 컴파일러 최적화 때문에 volatile 함수로 설계
     while (NULL_CLIENT_ID == gServerService.GetId());
 
-    // 최초 접속시 자신의 위치를 다른 클라이언트에게 알리기위해 서버에 전송
-    auto [playerX, playerY] = mPlayer->GetPosition();
-    gServerService.Send<PacketPlayerJoin>(PACKET_PLAYER_JOIN, playerX, playerY);
+    gServerService.Send<PacketPlayerConnect>(PACKET_PLAYER_CONNECT);
 
     return true;
 }
@@ -123,21 +121,23 @@ void GameFramework::CreateObjects()
     mTimer = std::make_unique<Timer>();
     mPlayer = std::make_unique<Player>();
 
-    // 플레이어의 키 입력처리 함수들을 등록
-    mPlayer->RegisterExecutionFn();
-
     CreatePointsFromFile();
 }
 
-void GameFramework::JoinOtherPlayer(byte id, const Position pos)
+void GameFramework::JoinOtherPlayer(const byte id, const Position pos)
 {
     std::lock_guard playerGuard{ mPlayerLock };
     // 플레이어 추가
     mOtherPlayers.emplace(id, std::make_unique<Player>(pos));
 }
 
-void GameFramework::UpdateJoinedPlayer(byte id, Position pos)
+void GameFramework::UpdateJoinedPlayer(const byte id, const Position pos)
 {
+    if (id == gServerService.GetId()) {
+        mPlayer->SetPosition(pos);
+        return;
+    }
+
     std::lock_guard playerGuard{ mPlayerLock };
     // 해당 플레이어 정보 업데이트
     if (mOtherPlayers.contains(id)) {
@@ -145,7 +145,7 @@ void GameFramework::UpdateJoinedPlayer(byte id, Position pos)
     }
 }
 
-void GameFramework::ExitPlayer(byte id)
+void GameFramework::ExitPlayer(const byte id)
 {
     std::lock_guard playerGuard{ mPlayerLock };
     // Exit 패킷이 오는 경우 해당 id 플레이어가 존재하는지 확인 후 지운다.
@@ -207,7 +207,13 @@ void GameFramework::OnProcessingMouse(HWND hWnd, UINT message, WPARAM wParam, LP
 void GameFramework::OnProcessingKeyboard(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message) {
+    case WM_KEYDOWN:
+        gServerService.Send<PacketPlayerInput>(PACKET_PLAYER_INPUT, static_cast<byte>(wParam), true);
+        break;
+
     case WM_KEYUP:
+        gServerService.Send<PacketPlayerInput>(PACKET_PLAYER_INPUT, static_cast<byte>(wParam), false);
+
         switch (wParam) {
         case VK_ESCAPE:
             PostQuitMessage(0);
@@ -229,22 +235,15 @@ void GameFramework::Update()
     mTimer->Update();
     const float deltaTime = mTimer->GetDeltaTime();
 
-    // 현재 프로세스가 아닌 다른 프로세스에서의 입력은 감지하지 않도록 설정
-    if (mKeyboardFocused) {
-        mKeyInput->Input(deltaTime);
-    }
-
-    gServerService.Send<PacketPing>(PACKET_PING, mTimer->GetCurrentTick());
-
-    mPlayer->Update(deltaTime);
-    mDrawBuffer->SetCameraPosition(mPlayer->GetPosition());
-
-    auto [playerX, playerY] = mPlayer->GetPosition();
-    gServerService.Send<PacketPosition2D>(PACKET_POSITION2D, playerX, playerY);
+    //gServerService.Send<PacketPing>(PACKET_PING, mTimer->GetCurrentTick());
 
     for (auto& [id, otherPlayer] : mOtherPlayers) {
         otherPlayer->Update(deltaTime);
     }
+
+    mPlayer->Update(deltaTime);
+
+    mDrawBuffer->SetCameraPosition(mPlayer->GetPosition());
 }
 
 void GameFramework::Render()
@@ -267,6 +266,7 @@ void GameFramework::Render()
     mDrawBuffer->DrawString("Delta Time: "s + std::to_string(mTimer->GetDeltaTime()) + "s"s, 10, 50);
     mDrawBuffer->DrawString("지연률"s + std::to_string(mRecvTimeLatency) + "ms"s, 10, 80);
     mDrawBuffer->DrawString("다른 클라이언트: "s + std::to_string(mOtherPlayers.size()), 10, 110);
+    mDrawBuffer->DrawString("My ID: "s + std::to_string(static_cast<int>(gServerService.GetId())), 10, 140);
 
     mDrawBuffer->CopyBufferMemToMain();
 }

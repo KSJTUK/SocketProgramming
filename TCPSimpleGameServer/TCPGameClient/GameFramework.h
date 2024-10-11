@@ -31,9 +31,9 @@ public:
 	void CreateObjects();
 
 	// 다른 플레이어 접속, 퇴장, 업데이트 처리
-	void JoinOtherPlayer(byte id, const Position pos);
-	void UpdateJoinedPlayer(byte id, Position pos);
-	void ExitPlayer(byte id);
+	void JoinOtherPlayer(const byte id, const Position pos);
+	void UpdateJoinedPlayer(const byte id, const Position pos);
+	void ExitPlayer(const byte id);
 
 	// 핑에 대한 결과를 받는 함수
 	void PingResult(std::chrono::high_resolution_clock::time_point timeSent);

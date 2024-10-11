@@ -95,7 +95,11 @@ void ServerService::Recv()
 	while (true) {
 		// recv, 받은 데이터의 길이가 0또는 음수이면 종료 or 에러
 		int len = ::recv(mSocket, mRecvBuffer, RECV_SIZE, 0);
-		if (len <= 0) {
+		if (len == 0) {
+			break;
+		}
+		else if (len < 0) {
+			MessageBoxA(nullptr, GetErrorString().c_str(), "Recv Error", MB_OK | MB_ICONERROR);
 			break;
 		}
 
@@ -147,13 +151,15 @@ void ServerService::ProcessPacket(char* packet)
 	break;
 
 	case PACKET_PLAYER_JOIN:
-	{
-		PacketPlayerJoin* joinedPlayer = reinterpret_cast<PacketPlayerJoin*>(packet);
-		gGameFramework.JoinOtherPlayer(senderId, joinedPlayer->pos);
-	}
+		if (senderId == mId) break;
+		else {
+		PacketPlayerJoin* playerJoin = reinterpret_cast<PacketPlayerJoin*>(packet);
+		gGameFramework.JoinOtherPlayer(senderId, playerJoin->pos);
+		}
 	break;
 
 	case PACKET_PLAYER_EXIT:
+		if (senderId == mId) break;
 		gGameFramework.ExitPlayer(senderId);
 		break;
 

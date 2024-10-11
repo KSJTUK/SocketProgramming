@@ -21,6 +21,13 @@ namespace Address {
 	}
 }
 
+/* ----------------------------------------
+*
+*				Transceiver
+* Client 의 송수신 기능 분리
+*
+  ---------------------------------------- */
+
 class Transceiver {
 	inline static constexpr int RECV_SIZE = 1024;
 
@@ -40,7 +47,7 @@ public:
 
 	// 위에서의 단점을 극복하기 위해 템플릿으로 설계
 	template<typename PacketType, typename... Args> requires std::is_base_of_v<PacketBase, PacketType>
-	void Send(byte type, byte id, Args&&... args)
+	void Send(const byte type, const byte id, Args&&... args)
 	{
 		PacketType packet{ sizeof(PacketType), type, id, (args)... };
 		int result = ::send(
@@ -52,7 +59,7 @@ public:
 	}
 
 	template <typename PacketType> requires std::is_base_of_v<PacketBase, PacketType>
-	void Send(byte type, byte id, char* data)
+	void Send(const byte type, const byte id, char* data)
 	{
 		PacketType packet;
 		std::memcpy(&packet, data, sizeof(PacketType));
@@ -69,7 +76,7 @@ public:
 	}
 
 	// 같은 패킷을 보내는 경우 계속해서 만들필요는 없음.
-	void Send(PacketBase* packet)
+	void Send(PacketBase* const packet)
 	{
 		int result = ::send(
 			mSocket,
@@ -78,9 +85,6 @@ public:
 			0
 		);
 	}
-
-private:
-	void ProcessPacket(char* packet);
 
 private:
 	SOCKET mSocket{ };

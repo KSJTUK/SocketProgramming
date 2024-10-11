@@ -1,6 +1,12 @@
 #include "pch.h"
 #include "Transceiver.h"
 
+/* ----------------------------------------
+*
+*				Transceiver
+*
+  ---------------------------------------- */
+
 Transceiver::Transceiver()
 	: mSocket{ INVALID_SOCKET },
 	mHostInfo{ }
@@ -42,6 +48,11 @@ void Transceiver::Recv()
 		}
 
 		if (prevRemain > 0) {
+			if (len + prevRemain > 1024) {
+				std::cout << "데이터의 크기가 버퍼의 크기를 넘습니다." << std::endl;
+				break;
+			}
+
 			// 받은 recvBuffer에서 이전에 남았던 데이터를 앞에 붙이기 위한 작업
 			memmove(mRecvBuffer + prevRemain, mRecvBuffer, len);
 			memcpy(mRecvBuffer, remainDataBuffer, prevRemain);
@@ -60,45 +71,10 @@ void Transceiver::Recv()
 				break;
 			}
 
-			ProcessPacket(currentData);
+			gGameServer.ProcessPacket(currentData);
 
 			remainSize -= packetSize;
 			currentData += packetSize;
 		}
-	}
-}
-
-void Transceiver::ProcessPacket(char* packet)
-{
-	// PacketBase 구조체에서 1바이트는 size, 1바이트는 type, 1바이트는 송신자 id로 설정했음
-	byte size = packet[0];
-	byte type = packet[1];
-	byte senderId = packet[2];
-
-	switch (type) {
-	case PACKET_PLAYER_CONNECT:
-		break;
-
-	case PACKET_POSITION2D:
-		gGameServer.Broadcast<PacketPosition2D>(PACKET_POSITION2D, senderId, packet);
-		break;
-
-	case PACKET_PLAYER_INPUT:
-		break;
-
-	case PACKET_PLAYER_JOIN:
-		gGameServer.UpdatePlayer(senderId, reinterpret_cast<PacketPlayerJoin*>(packet)->pos);
-		gGameServer.SendOtherClientsSession(senderId);
-		gGameServer.Broadcast<PacketPlayerJoin>(PACKET_PLAYER_JOIN, senderId, packet);
-		break;
-
-	case PACKET_PLAYER_EXIT:
-		gGameServer.Broadcast<PacketPlayerExit>(PACKET_PLAYER_EXIT, senderId, packet);
-		gGameServer.ExitClient(senderId);
-		break;
-
-	case PACKET_PING:
-		Send<PacketPing>(PACKET_PING, senderId, packet);
-		break;
 	}
 }

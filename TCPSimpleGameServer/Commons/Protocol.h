@@ -48,6 +48,7 @@ struct PacketPlayerConnect : public PacketBase {
 
 struct PacketPlayerInput : public PacketBase {
 	byte keyInput;
+	bool down;
 };
 
 struct PacketPlayerJoin : public PacketBase {
