@@ -1,10 +1,16 @@
+#include "Object.h"
+#include "Object.h"
+#include "Object.h"
+#include "Object.h"
 #include "pch.h"
 #include "Object.h"
 #include "ProcessKeyInput.h"
 
-Object::Object(const Position pos, SIZE boxSize)
+Object::Object(const Position pos, SIZE boxSize, OBJECT_TYPE objType)
 	: mPos{ pos },
 	mBoxSize{ boxSize },
+	mObjType{ objType },
+	mDirection{ 0, 0 },
 	mVelocity{ 0.f }
 {
 }
@@ -21,6 +27,21 @@ void Object::SetPosition(const Position pos)
 Position Object::GetPosition() const
 {
 	return mPos;
+}
+
+SIZE Object::GetBoxSize() const
+{
+	return mBoxSize;
+}
+
+Direction2D Object::GetDirection() const
+{
+	return mDirection;
+}
+
+float Object::GetVelocity() const
+{
+	return mVelocity;
 }
 
 RECT Object::GetBox() const
@@ -49,7 +70,28 @@ bool Object::CheckCollision(Object* other)
 	return true;
 }
 
-void Object::HandleCollision(Object* other)
+void Object::Update(const float deltaTime)
 {
-	HandleCollision(other);
+	mPos.x += mDirection.dx * mVelocity * deltaTime;
+	mPos.y += mDirection.dy * mVelocity * deltaTime;
+}
+
+/* ----------------------------------------
+*
+*				WALL
+*
+  ---------------------------------------- */
+
+void Wall::HandleCollision(Object* other)
+{
+}
+
+/* ----------------------------------------
+*
+*				Bullet
+*
+  ---------------------------------------- */
+
+void Bullet::HandleCollision(Object* other)
+{
 }

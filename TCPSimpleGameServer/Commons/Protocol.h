@@ -18,8 +18,15 @@ inline constexpr const char* SERVER_IP = "127.0.0.1";
 inline constexpr const char* SERVER_IP = "192.168.20.87";
 #endif
 inline constexpr unsigned short SERVER_PORT = 7777;
+inline constexpr unsigned short MAX_OBJECT = 1000;
 
 using byte = unsigned char;
+
+enum OBJECT_TYPE {
+	NONE,
+	WALL,
+	BULLET
+};
 
 enum {
 	PACKET_POSITION2D = 0,
@@ -28,8 +35,18 @@ enum {
 	PACKET_PLAYER_CONNECT,
 	PACKET_PLAYER_JOIN,
 	PACKET_PLAYER_EXIT,
+	PACKET_OBJECT_INFO,
 
 	PACKET_TYPE_COUNT,
+};
+
+struct ObjectInfo {
+	Position pos;
+	SIZE boxSize;
+	OBJECT_TYPE objectType;
+
+	Direction2D dir;
+	float velocity;
 };
 
 #pragma pack(push, 1)
@@ -60,6 +77,16 @@ struct PacketPlayerExit : public PacketBase {
 
 struct PacketPosition2D : public PacketBase {
 	Position pos;
+};
+
+struct PacketObjectInfo : public PacketBase {
+	Position pos;
+	SIZE boxSize;
+	OBJECT_TYPE objectType;
+
+	Direction2D dir;
+	float velocity;
+	unsigned short objectIndex;
 };
 
 #pragma pack(pop)

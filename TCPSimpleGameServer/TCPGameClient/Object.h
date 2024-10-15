@@ -8,24 +8,23 @@
 
 class Object abstract {
 public:
-	Object(const Position pos, SIZE boxSize, OBJECT_TYPE objType=NONE);
+	Object(const Position pos, SIZE boxSize, OBJECT_TYPE objType = NONE);
 	virtual ~Object();
 
 public:
-	void SetPosition(const Position pos);
-	Position GetPosition() const;
-	SIZE GetBoxSize() const;
-	Direction2D GetDirection() const;
-	float GetVelocity() const;
+	void SetShape(std::shared_ptr<class Shape> shape);
+	//void SetPosition(const Position pos);
+	//Position GetPosition() const;
+	//SIZE GetBoxSize() const;
+	//Direction2D GetDirection() const;
+	//float GetVelocity() const;
 
-	RECT GetBox() const;
+	//RECT GetBox() const;
 
 public:
-	bool CheckCollision(Object* other);
+	//virtual void Update(const float deltaTime);
+	virtual void Render(const std::shared_ptr<class DrawBuffer>& drawBuffer) abstract;
 
-	virtual void Update(const float deltaTime);
-	virtual void HandleCollision(Object* other) abstract;
-	
 private:
 	Position mPos;
 	SIZE mBoxSize;
@@ -33,6 +32,8 @@ private:
 	OBJECT_TYPE mObjType;
 	Direction2D mDirection;
 	float mVelocity;
+
+	std::shared_ptr<class Shape> mShape;
 };
 
 /* ----------------------------------------
@@ -44,7 +45,7 @@ private:
 class Wall : public Object {
 public:
 	Wall(const Position pos, SIZE boxSize) : Object{ pos, boxSize, WALL } { }
-	virtual ~Wall() { } 
+	virtual ~Wall() { }
 
 public:
 	virtual void HandleCollision(Object* other);

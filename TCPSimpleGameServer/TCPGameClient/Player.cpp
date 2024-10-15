@@ -8,21 +8,24 @@
 
 Player::Player()
 	: mPosition{ Random::GetUniformRandom(10.f, 1000.f), Random::GetUniformRandom(10.f, 800.f) },
-	mShape{ std::make_unique<Square>(mPosition, DEFAUT_SIZE, DEFAUT_SIZE, gGameFramework.GetDrawBuffer()) },
+	mSize{ DEFAULT_SIZE, DEFAULT_SIZE },
+	mShape{ Shapes::gSquare },
 	mVelocity{ DEFAULT_SPEED }
 {
 }
 
 Player::Player(float x, float y)
 	: mPosition{ x, y },
-	mShape{ std::make_unique<Square>(mPosition, DEFAUT_SIZE, DEFAUT_SIZE, gGameFramework.GetDrawBuffer()) },
+	mSize{ DEFAULT_SIZE, DEFAULT_SIZE },
+	mShape{ Shapes::gSquare },
 	mVelocity{ DEFAULT_SPEED }
 {
 }
 
 Player::Player(const Position pos)
 	: mPosition{ pos },
-	mShape{ std::make_unique<Square>(mPosition, DEFAUT_SIZE, DEFAUT_SIZE, gGameFramework.GetDrawBuffer()) },
+	mSize{ DEFAULT_SIZE, DEFAULT_SIZE },
+	mShape{ Shapes::gSquare },
 	mVelocity{ DEFAULT_SPEED }
 {
 }
@@ -53,7 +56,6 @@ void Player::SetValocity(float velocity)
 
 void Player::Update(const float deltaTime)
 {
-	mShape->SetPosition(mPosition);
 }
 
 void Player::Render()
@@ -64,5 +66,5 @@ void Player::Render()
 	int strSize = static_cast<int>(positionStr.size());
 	::TextOutA(memDC, (int)x - 20 - strSize * 2, (int)y - 40, positionStr.c_str(), strSize);
 
-	mShape->Render();
+	mShape->Render(mSize, mPosition, gGameFramework.GetDrawBuffer());
 }

@@ -10,52 +10,25 @@
 Shape::Shape() = default;
 Shape::~Shape() = default;
 
-void Shape::SetPosition(float x, float y)
-{
-	mPosition = { x, y };
-}
-
-void Shape::SetPosition(Position position)
-{
-	mPosition = position;
-}
-
-Shape::Shape(float x, float y)
-	: mPosition{ x, y }
-{
-}
-
-Shape::Shape(Position position)
-	: mPosition{ position }
-{
-}
-
 /* ----------------------------------------
 *
 *				PointShape
 *
   ---------------------------------------- */
 
-PointShape::PointShape(float x, float y, std::shared_ptr<DrawBuffer> drawBuffer)
-	: Shape{ x, y },
-	mDrawBuffer{ drawBuffer }
+PointShape::PointShape()
+	: Shape{ }
 {
-}
+} 
 
-PointShape::PointShape(Position position, std::shared_ptr<DrawBuffer> drawBuffer)
-	: Shape{ position },
-	mDrawBuffer{ drawBuffer }
+void PointShape::Render(SIZE size, Position pos, const std::shared_ptr<class DrawBuffer>& drawBuffer)
 {
-}
-
-void PointShape::Render()
-{
-	if (not mDrawBuffer->IsInCamera(GetPosition())) {
+	if (not drawBuffer->IsInCamera(pos)) {
 		return;
 	}
 
-	auto [x, y] = GetPosition();
-	SetPixel(mDrawBuffer->GetMemDC(), (int)x, (int)y, RGB(0, 0, 0));
+	auto [x, y] = pos;
+	SetPixel(drawBuffer->GetMemDC(), (int)x, (int)y, RGB(0, 0, 0));
 }
 
 /* ----------------------------------------
@@ -64,45 +37,26 @@ void PointShape::Render()
 *
   ---------------------------------------- */
 
-Square::Square(unsigned int width, unsigned int height, std::shared_ptr<DrawBuffer> drawBuffer)
-	: Shape{ },
-	mWidth{ width },
-	mHeight{ height },
-	mDrawBuffer{ drawBuffer }
-{
-}
-
-Square::Square(Position position, unsigned int width, unsigned int height, std::shared_ptr<DrawBuffer> drawBuffer)
-	: Shape{ position },
-	mWidth{ width },
-	mHeight{ height },
-	mDrawBuffer{ drawBuffer }
-{
-}
-
-Square::Square(float x, float y, unsigned int width, unsigned int height, std::shared_ptr<DrawBuffer> drawBuffer)
-	: Shape{ x, y },
-	mWidth{ width },
-	mHeight{ height },
-	mDrawBuffer{ drawBuffer }
+Square::Square()
+	: Shape{ }
 {
 }
 
 Square::~Square() = default;
 
-void Square::Render()
+void Square::Render(SIZE size, Position pos, const std::shared_ptr<class DrawBuffer>& drawBuffer)
 {
-	if (not mDrawBuffer->IsInCamera(GetPosition())) {
+	if (not drawBuffer->IsInCamera(pos)) {
 		return;
 	}
 
-	auto [x, y] = GetPosition();
+	auto [x, y] = pos;
+	auto [w, h] = size;
 	Rectangle(
-		mDrawBuffer->GetMemDC(),
-		(int)x - (mWidth / 2),   /* left   */
-		(int)y - (mHeight / 2),  /* top    */
-		(int)x + (mWidth / 2),   /* right  */
-		(int)y + (mHeight / 2)   /* bottom */
+		drawBuffer->GetMemDC(),
+		(int)x - (w / 2),   /* left   */
+		(int)y - (h / 2),  /* top    */
+		(int)x + (w / 2),   /* right  */
+		(int)y + (h / 2)   /* bottom */
 	);
 }
-

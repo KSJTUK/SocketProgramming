@@ -6,7 +6,7 @@
 #include "Timer.h"
 #include "Input.h"
 #include "DrawBuffer.h"
-#include "Shape.h"
+#include "Object.h"
 #include "Player.h"
 
 /* ----------------------------------------
@@ -121,7 +121,7 @@ void GameFramework::CreateObjects()
     mTimer = std::make_unique<Timer>();
     mPlayer = std::make_unique<Player>();
 
-    CreatePointsFromFile();
+    mObjects.resize(MAX_OBJECT);
 }
 
 void GameFramework::JoinOtherPlayer(const byte id, const Position pos)
@@ -170,23 +170,12 @@ std::shared_ptr<DrawBuffer> GameFramework::GetDrawBuffer() const
     return mDrawBuffer;
 }
 
-void GameFramework::CreatePointsFromFile()
+void GameFramework::UpdateObject(PacketObjectInfo* objectInfo)
 {
-    std::ifstream in{ "Entities.bin", std::ios::binary };
-    if (not in) {
-        return;
-    }
-
-    size_t numOfPoints{ };
-    in.read(reinterpret_cast<char*>(&numOfPoints), sizeof(size_t));
-
-    std::vector<Position> positions(numOfPoints);
-    in.read(reinterpret_cast<char*>(positions.data()), numOfPoints * sizeof(Position));
-
-    mShapes.reserve(numOfPoints);
-    for (const auto& position : positions) {
-        mShapes.emplace_back(std::make_unique<Square>(position, 5, 5, mDrawBuffer));
-    }
+    //int idx = objectInfo->objectIndex;
+    //if (not mObjects[idx]) {
+    //    mObjects[idx].reset();
+    //}
 }
 
 // 마우스 메시지 처리 함수
@@ -235,13 +224,13 @@ void GameFramework::Update()
     mTimer->Update();
     const float deltaTime = mTimer->GetDeltaTime();
 
-    //gServerService.Send<PacketPing>(PACKET_PING, mTimer->GetCurrentTick());
+    ////gServerService.Send<PacketPing>(PACKET_PING, mTimer->GetCurrentTick());
 
-    for (auto& [id, otherPlayer] : mOtherPlayers) {
-        otherPlayer->Update(deltaTime);
-    }
+    //for (auto& [id, otherPlayer] : mOtherPlayers) {
+    //    otherPlayer->Update(deltaTime);
+    //}
 
-    mPlayer->Update(deltaTime);
+    //mPlayer->Update(deltaTime);
 
     mDrawBuffer->SetCameraPosition(mPlayer->GetPosition());
 }
@@ -250,15 +239,16 @@ void GameFramework::Render()
 {
     mDrawBuffer->CleanupBuffer();
 
-    gGameFramework.GetDrawBuffer()->DrawString(std::to_string(mTimer->GetFPS()), 10, 50);
+    mDrawBuffer->DrawString(std::to_string(mTimer->GetFPS()), 10, 50);
 
     for (auto& [id, otherPlayer] : mOtherPlayers) {
         otherPlayer->Render();
     }
 
-    for (auto& shape : mShapes) {
-        shape->Render();
-    }
+    //for (auto& object : mObjects) {
+    //    if (object)
+    //        object->Render(mDrawBuffer);
+    //}
 
     mPlayer->Render();
 

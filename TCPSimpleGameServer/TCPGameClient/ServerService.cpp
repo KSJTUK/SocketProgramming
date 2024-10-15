@@ -167,6 +167,13 @@ void ServerService::ProcessPacket(char* packet)
 		gGameFramework.PingResult(reinterpret_cast<PacketPing*>(packet)->timeSent);
 		break;
 
+	case PACKET_OBJECT_INFO:
+		{
+			PacketObjectInfo* objectInfo = reinterpret_cast<PacketObjectInfo*>(packet);
+			gGameFramework.UpdateObject(objectInfo);
+		}
+		break;
+
 	default:
 		break;
 	}

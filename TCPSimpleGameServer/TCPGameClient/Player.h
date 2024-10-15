@@ -7,7 +7,7 @@
   ---------------------------------------- */
 
 class Player {
-	inline static constexpr unsigned int DEFAUT_SIZE = 40;
+	inline static constexpr unsigned int DEFAULT_SIZE = 40;
 	inline static constexpr float DEFAULT_SPEED = 300.0f;
 
 public:
@@ -34,6 +34,7 @@ public:
 private:
 	// 움직임 관련
 	Direction2D mDirection{ };
+	SIZE mSize{ };
 	float mVelocity{ };
 	Position mPosition{ };
 
@@ -41,5 +42,5 @@ private:
 
 	// 플레이어가 그려질 도형정보
 	std::string mName{ "Position" };
-	std::unique_ptr<class Shape> mShape{ };
+	std::shared_ptr<Shape> mShape{ };
 };

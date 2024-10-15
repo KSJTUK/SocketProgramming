@@ -58,6 +58,9 @@ public:
 
 	void ProcessPacket(char* packet);
 
+	void SendClientsInfo();
+	void SendObjectsInfo();
+
 public:
 	/* 게임 월드 작업 관련 함수들 */
 	void Update();
@@ -80,4 +83,5 @@ private:
 	std::vector<std::thread> mClientServiceThreads;
 
 	std::vector<std::shared_ptr<Client>> mClients;
+	std::vector<std::unique_ptr<class Object>> mObjects;
 };

@@ -36,6 +36,7 @@
 #include "Protocol.h"
 #include "Macros.h"
 #include "Random.h"
+#include "Shape.h"
 
 #define NETWORK_DEBUG 1
 
@@ -49,6 +50,11 @@ struct WindowInfo {
 	HWND windowHandle;
 	RECT windowRect;
 };
+
+namespace Shapes {
+	extern std::shared_ptr<PointShape> gPointShape;
+	extern std::shared_ptr<Square> gSquare;
+}
 
 extern class GameFramework gGameFramework;
 extern class ServerService gServerService;
