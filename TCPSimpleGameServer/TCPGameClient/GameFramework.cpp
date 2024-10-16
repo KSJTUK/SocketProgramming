@@ -172,10 +172,19 @@ std::shared_ptr<DrawBuffer> GameFramework::GetDrawBuffer() const
 
 void GameFramework::UpdateObject(PacketObjectInfo* objectInfo)
 {
-    //int idx = objectInfo->objectIndex;
-    //if (not mObjects[idx]) {
-    //    mObjects[idx].reset();
-    //}
+    int idx = objectInfo->objectIndex;
+    if (not mObjects[idx]) {
+        switch (objectInfo->objectType) {
+        case WALL:
+            mObjects[idx].reset(new Wall{objectInfo->pos, objectInfo->boxSize});
+            break;
+
+        case BULLET:
+            break;
+        }
+    }
+
+    mObjects[idx]->SetPosition(objectInfo->pos);
 }
 
 // 마우스 메시지 처리 함수
@@ -245,10 +254,10 @@ void GameFramework::Render()
         otherPlayer->Render();
     }
 
-    //for (auto& object : mObjects) {
-    //    if (object)
-    //        object->Render(mDrawBuffer);
-    //}
+    for (auto& object : mObjects) {
+        if (object)
+            object->Render(mDrawBuffer);
+    }
 
     mPlayer->Render();
 

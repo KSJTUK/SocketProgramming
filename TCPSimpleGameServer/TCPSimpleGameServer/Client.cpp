@@ -8,7 +8,7 @@
   ---------------------------------------- */
 
 inline constexpr float MIN_WORLD_BORDER = 100.0f;
-inline constexpr float DEFAULT_SPEED = 30.0f;
+inline constexpr float DEFAULT_SPEED = 1000.0f;
 
 Client::Client()
 	: mId{ NULL_CLIENT_ID },

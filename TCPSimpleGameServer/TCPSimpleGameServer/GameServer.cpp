@@ -72,6 +72,7 @@ void GameServer::SendObjectsInfo()
 		packet.boxSize = object->GetBoxSize();
 		packet.dir = object->GetDirection();
 		packet.velocity = object->GetVelocity();
+		packet.objectType = object->GetType();
 		packet.objectIndex = count++;
 
 		for (int clientId = 0; clientId < MAX_CLIENT; ++clientId) {
@@ -101,13 +102,13 @@ void GameServer::Update()
 		client->Update(mDeltaTime.load());
 	}
 
-	//for (auto& object : mObjects) {
-	//    if (object)
-	//        object->Update(mDeltaTime.load());
-	//}
+	for (auto& object : mObjects) {
+	    if (object)
+	        object->Update(mDeltaTime.load());
+	}
 
 	SendClientsInfo();
-	//SendObjectsInfo();
+	SendObjectsInfo();
 
 	updateDelay = 0.0f;
 }
@@ -158,8 +159,8 @@ void GameServer::Init()
 	mObjects.resize(MAX_OBJECT);
 	for (int i = 0; i < 10; ++i) {
 	    mObjects[i] = std::make_unique<Wall>(
-	        Position{ Random::GetUniformRandom<float>(100.0, WORLD_SIZE.cx - 100.0f), Random::GetUniformRandom<float>(100.0, WORLD_SIZE.cy - 100.0f) },
-	        SIZE{ 40, 40 }
+	        Position{ Random::GetUniformRandom<float>(0.0f, 800.0f), Random::GetUniformRandom<float>(0.0f, 600.0f) },
+	        SIZE{ 100, 100 }
 	    );
 	}
 }

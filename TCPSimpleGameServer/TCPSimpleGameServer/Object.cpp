@@ -24,6 +24,11 @@ void Object::SetPosition(const Position pos)
 	mPos = pos;
 }
 
+OBJECT_TYPE Object::GetType() const
+{
+	return mObjType;
+}
+
 Position Object::GetPosition() const
 {
 	return mPos;

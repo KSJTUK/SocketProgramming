@@ -13,6 +13,7 @@ public:
 
 public:
 	void SetPosition(const Position pos);
+	OBJECT_TYPE GetType() const;
 	Position GetPosition() const;
 	SIZE GetBoxSize() const;
 	Direction2D GetDirection() const;

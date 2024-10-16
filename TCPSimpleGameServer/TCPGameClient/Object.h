@@ -13,7 +13,8 @@ public:
 
 public:
 	void SetShape(std::shared_ptr<class Shape> shape);
-	//void SetPosition(const Position pos);
+	void SetPosition(const Position pos);
+	void SetColor(DWORD color);
 	//Position GetPosition() const;
 	//SIZE GetBoxSize() const;
 	//Direction2D GetDirection() const;
@@ -23,7 +24,7 @@ public:
 
 public:
 	//virtual void Update(const float deltaTime);
-	virtual void Render(const std::shared_ptr<class DrawBuffer>& drawBuffer) abstract;
+	virtual void Render(const std::shared_ptr<class DrawBuffer>& drawBuffer);
 
 private:
 	Position mPos;
@@ -32,6 +33,8 @@ private:
 	OBJECT_TYPE mObjType;
 	Direction2D mDirection;
 	float mVelocity;
+
+	DWORD mColor{ };
 
 	std::shared_ptr<class Shape> mShape;
 };
@@ -44,7 +47,7 @@ private:
 
 class Wall : public Object {
 public:
-	Wall(const Position pos, SIZE boxSize) : Object{ pos, boxSize, WALL } { }
+	Wall(const Position pos, SIZE boxSize);
 	virtual ~Wall() { }
 
 public:
@@ -59,7 +62,7 @@ public:
 
 class Bullet : public Object {
 public:
-	Bullet(const Position pos, SIZE boxSize) : Object{ pos, boxSize, BULLET } { }
+	Bullet(const Position pos, SIZE boxSize);
 	virtual ~Bullet() { }
 
 public:
