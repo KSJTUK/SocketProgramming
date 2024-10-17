@@ -27,7 +27,7 @@ void DrawBuffer::SetCameraPosition(Position cameraPosition)
 
 	// 카메라 위치를 기준으로 복사할 월드의 영역을 설정
 	auto [left, top] = GetCameraLeftTop();
-	mValidBufferRect = { left, top, left + mWindowInfo.windowRect.right, top + mWindowInfo.windowRect.bottom };
+	mValidBufferRect = RECT{ left, top, left + mWindowInfo.windowRect.right, top + mWindowInfo.windowRect.bottom };
 }
 
 void DrawBuffer::SetBackGroundColor(DWORD bgColor)
@@ -56,8 +56,7 @@ HDC DrawBuffer::GetMemDC() const
 
 bool DrawBuffer::IsInCamera(Position objectPos) const
 {
-	return (mValidBufferRect.left <= objectPos.x and mValidBufferRect.right >= objectPos.x) and /* check in X */
-		(mValidBufferRect.top <= objectPos.y and mValidBufferRect.bottom >= objectPos.y);		/* check in Y */
+	return mValidBufferRect.Contains(objectPos);
 }
 
 void DrawBuffer::DrawString(std::string_view str, const int x, const int y) const
@@ -68,7 +67,7 @@ void DrawBuffer::DrawString(std::string_view str, const int x, const int y) cons
 
 void DrawBuffer::CleanupBuffer()
 {
-	auto [l, t, r, b] = mValidBufferRect;
+	auto [l, t, r, b] = mValidBufferRect.GetRect();
 	SetBrush(mBackGroundColor);
 	Rectangle(mMemDC, l, t, r, b);
 	ResetBrush();

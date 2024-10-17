@@ -176,7 +176,7 @@ void GameFramework::UpdateObject(PacketObjectInfo* objectInfo)
     if (not mObjects[idx]) {
         switch (objectInfo->objectType) {
         case WALL:
-            mObjects[idx].reset(new Wall{objectInfo->pos, objectInfo->boxSize});
+            mObjects[idx].reset(new Wall{ objectInfo->pos, objectInfo->boxSize, objectInfo->color });
             break;
 
         case BULLET:
@@ -185,6 +185,7 @@ void GameFramework::UpdateObject(PacketObjectInfo* objectInfo)
     }
 
     mObjects[idx]->SetPosition(objectInfo->pos);
+    mObjects[idx]->SetColor(objectInfo->color);
 }
 
 // 마우스 메시지 처리 함수
@@ -233,7 +234,7 @@ void GameFramework::Update()
     mTimer->Update();
     const float deltaTime = mTimer->GetDeltaTime();
 
-    ////gServerService.Send<PacketPing>(PACKET_PING, mTimer->GetCurrentTick());
+    gServerService.Send<PacketPing>(PACKET_PING, mTimer->GetCurrentTick());
 
     //for (auto& [id, otherPlayer] : mOtherPlayers) {
     //    otherPlayer->Update(deltaTime);

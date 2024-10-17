@@ -35,6 +35,7 @@ private:
 	// 움직임 관련
 	Direction2D mDirection{ };
 	SIZE mSize{ };
+	DWORD mColor{ RGB(0, 255, 0) };
 	float mVelocity{ };
 	Position mPosition{ };
 

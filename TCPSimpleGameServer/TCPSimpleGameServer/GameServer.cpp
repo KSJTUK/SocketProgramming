@@ -42,7 +42,7 @@ void GameServer::ProcessPacket(char* packet)
 		break;
 
 	case PACKET_PING:
-		//Send<PacketPing>(PACKET_PING, senderId, packet);
+		mClients[senderId]->GetTransceiver().Send<PacketPing>(PACKET_PING, senderId, packet);
 		break;
 	}
 }
@@ -72,6 +72,7 @@ void GameServer::SendObjectsInfo()
 		packet.boxSize = object->GetBoxSize();
 		packet.dir = object->GetDirection();
 		packet.velocity = object->GetVelocity();
+		packet.color = object->GetColor();
 		packet.objectType = object->GetType();
 		packet.objectIndex = count++;
 
@@ -84,28 +85,28 @@ void GameServer::SendObjectsInfo()
 	}
 }
 
-Object* GameServer::CreateObject(OBJECT_TYPE objType, Position pos, SIZE size)
+Object* GameServer::CreateObject(OBJECT_TYPE objType, Position pos, SIZE size, DWORD color)
 {
 	// TODO 맘에 안듬
 	switch (objType) {
 	case WALL:
-		return new Wall{ pos, size };
+		return new Wall{ pos, size, color };
 
 	case BULLET:
-		return new Bullet{ pos, size };
+		return new Bullet{ pos, size, color };
 	}
 
 	return nullptr;
 }
 
-bool GameServer::AllocObject(OBJECT_TYPE objType, Position pos, SIZE size)
+bool GameServer::AllocObject(OBJECT_TYPE objType, Position pos, SIZE size, DWORD color)
 {
 	// TODO 너무 대충만들었다.
 	// 오브젝트 부분은 Object Pool을 이용하는게 좋을거 같음. 변경 예정.
 	for (int allocIdx{ }; auto& alive : mObjectAlive) {
 		if (not alive) {
 			alive = true;
-			mObjects[allocIdx].reset(CreateObject(objType, pos, size));
+			mObjects[allocIdx].reset(CreateObject(objType, pos, size, color));
 			return true;
 		}
 
@@ -198,8 +199,9 @@ void GameServer::Init()
 	for (int i = 0; i < 500; ++i) {
 		AllocObject(
 			WALL,
-			Position{ Random::GetUniformRandom<float>(0.0f, 800.0f), Random::GetUniformRandom<float>(0.0f, 600.0f) },
-			SIZE{ Random::GetUniformRandom<long>(40, 100), Random::GetUniformRandom<long>(40, 100) }
+			Position{ Random::GetUniformRandom<float>(0.0f, WORLD_SIZE.cx), Random::GetUniformRandom<float>(0.0f, WORLD_SIZE.cy) },
+			SIZE{ Random::GetUniformRandom<long>(40, 100), Random::GetUniformRandom<long>(40, 100) },
+			Random::GetRandomRGB()
 		);
 	}
 }

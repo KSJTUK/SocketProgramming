@@ -30,4 +30,23 @@ namespace Random {
             return GetUniformRandFloat<T>(min, max);
         }
     }
+
+    inline DWORD GetRandomRGB()
+    {
+        DWORD rgb{ };
+        rgb |= GetUniformRandIntegral<DWORD>(0, 0xFF) << 16;
+        rgb |= GetUniformRandIntegral<DWORD>(0, 0xFF) << 8;
+        rgb |= GetUniformRandIntegral<DWORD>(0, 0xFF);
+        return rgb;
+    }
+
+    inline DWORD GetRandomRGBA()
+    {
+        DWORD rgba{ };
+        rgba |= GetUniformRandIntegral<DWORD>(0, 0xFF) << 24;
+        rgba |= GetUniformRandIntegral<DWORD>(0, 0xFF) << 16;
+        rgba |= GetUniformRandIntegral<DWORD>(0, 0xFF) << 8;
+        rgba |= GetUniformRandIntegral<DWORD>(0, 0xFF);
+        return rgba;
+    }
 }

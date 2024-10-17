@@ -1,15 +1,12 @@
-#include "Object.h"
-#include "Object.h"
-#include "Object.h"
-#include "Object.h"
 #include "pch.h"
 #include "Object.h"
 #include "ProcessKeyInput.h"
 
-Object::Object(const Position pos, SIZE boxSize, OBJECT_TYPE objType)
+Object::Object(const Position pos, SIZE boxSize, DWORD color, OBJECT_TYPE objType)
 	: mPos{ pos },
 	mBoxSize{ boxSize },
 	mObjType{ objType },
+	mColor{ color },
 	mDirection{ 0, 0 },
 	mVelocity{ 0.f }
 {
@@ -22,6 +19,11 @@ Object::~Object()
 void Object::SetPosition(const Position pos)
 {
 	mPos = pos;
+}
+
+void Object::SetColor(const DWORD color)
+{
+	mColor = color;
 }
 
 OBJECT_TYPE Object::GetType() const
@@ -37,6 +39,11 @@ Position Object::GetPosition() const
 SIZE Object::GetBoxSize() const
 {
 	return mBoxSize;
+}
+
+DWORD Object::GetColor() const
+{
+	return mColor;
 }
 
 Direction2D Object::GetDirection() const
@@ -60,13 +67,10 @@ RECT Object::GetBox() const
 	return RECT{ l, t, r, b };
 }
 
-bool Object::CheckCollision(Object* other)
+bool Object::CheckCollision(Object* const other)
 {
-	auto b1 = GetBox();
-	auto b2 = other->GetBox();
-
-	if ((b1.left > b2.right or b1.right < b2.left)
-		or b1.top > b2.bottom or b1.bottom < b2.top) {
+	auto [isIntersect, intersectArea] = RECTEX::Intersect(mPos, mBoxSize, other->mPos, other->mBoxSize);
+	if (not isIntersect) {
 		return false;
 	}
 

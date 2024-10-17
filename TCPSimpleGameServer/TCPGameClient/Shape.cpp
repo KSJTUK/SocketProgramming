@@ -21,14 +21,14 @@ PointShape::PointShape()
 {
 } 
 
-void PointShape::Render(SIZE size, Position pos, const std::shared_ptr<class DrawBuffer>& drawBuffer)
+void PointShape::Render(SIZE size, Position pos, DWORD color, const std::shared_ptr<class DrawBuffer>& drawBuffer)
 {
 	if (not drawBuffer->IsInCamera(pos)) {
 		return;
 	}
 
 	auto [x, y] = pos;
-	SetPixel(drawBuffer->GetMemDC(), (int)x, (int)y, RGB(0, 0, 0));
+	SetPixel(drawBuffer->GetMemDC(), (int)x, (int)y, color);
 }
 
 /* ----------------------------------------
@@ -44,11 +44,13 @@ Square::Square()
 
 Square::~Square() = default;
 
-void Square::Render(SIZE size, Position pos, const std::shared_ptr<class DrawBuffer>& drawBuffer)
+void Square::Render(SIZE size, Position pos, DWORD color, const std::shared_ptr<class DrawBuffer>& drawBuffer)
 {
 	if (not drawBuffer->IsInCamera(pos)) {
 		return;
 	}
+
+	drawBuffer->SetBrush(color);
 
 	auto [x, y] = pos;
 	auto [w, h] = size;
@@ -59,4 +61,32 @@ void Square::Render(SIZE size, Position pos, const std::shared_ptr<class DrawBuf
 		(int)x + (w / 2),   /* right  */
 		(int)y + (h / 2)   /* bottom */
 	);
+
+	drawBuffer->ResetBrush();
+}
+
+/* ----------------------------------------
+*
+*				Circle
+*
+  ---------------------------------------- */
+
+Circle::Circle()
+	: Shape{ }
+{
+}
+
+Circle::~Circle()
+{
+}
+
+void Circle::Render(SIZE size, Position pos, DWORD color, const std::shared_ptr<DrawBuffer>& drawBuffer)
+{
+	if (not drawBuffer->IsInCamera(pos)) {
+		return;
+	}
+
+	drawBuffer->SetBrush(color);
+
+	drawBuffer->ResetBrush();
 }

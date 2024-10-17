@@ -38,7 +38,7 @@ private:
 
 	DWORD mBackGroundColor{ 0 };
 	WindowInfo mWindowInfo{ };
-	RECT mValidBufferRect{ 0, 0, WORLD_SIZE.cx, WORLD_SIZE.cy };
+	RECTEX mValidBufferRect{ 0, 0, WORLD_SIZE.cx, WORLD_SIZE.cy };
 	Position mCameraPosition{ };
 };
 

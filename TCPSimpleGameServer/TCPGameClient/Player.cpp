@@ -66,5 +66,5 @@ void Player::Render()
 	int strSize = static_cast<int>(positionStr.size());
 	::TextOutA(memDC, (int)x - 20 - strSize * 2, (int)y - 40, positionStr.c_str(), strSize);
 
-	mShape->Render(mSize, mPosition, gGameFramework.GetDrawBuffer());
+	mShape->Render(mSize, mPosition, mColor, gGameFramework.GetDrawBuffer());
 }

@@ -8,22 +8,17 @@
 
 class Object abstract {
 public:
-	Object(const Position pos, SIZE boxSize, OBJECT_TYPE objType = NONE);
+	Object(const Position pos, SIZE boxSize, DWORD color=RGB(255, 255, 255), OBJECT_TYPE objType = NONE);
 	virtual ~Object();
 
 public:
 	void SetShape(std::shared_ptr<class Shape> shape);
 	void SetPosition(const Position pos);
 	void SetColor(DWORD color);
-	//Position GetPosition() const;
-	//SIZE GetBoxSize() const;
-	//Direction2D GetDirection() const;
-	//float GetVelocity() const;
-
-	//RECT GetBox() const;
 
 public:
-	//virtual void Update(const float deltaTime);
+	bool CheckCollision(Object* const other);
+	virtual void HandleCollision(Object* const other) abstract;
 	virtual void Render(const std::shared_ptr<class DrawBuffer>& drawBuffer);
 
 private:
@@ -47,7 +42,7 @@ private:
 
 class Wall : public Object {
 public:
-	Wall(const Position pos, SIZE boxSize);
+	Wall(const Position pos, SIZE boxSize, DWORD color);
 	virtual ~Wall() { }
 
 public:
@@ -62,7 +57,7 @@ public:
 
 class Bullet : public Object {
 public:
-	Bullet(const Position pos, SIZE boxSize);
+	Bullet(const Position pos, SIZE boxSize, DWORD color);
 	virtual ~Bullet() { }
 
 public:

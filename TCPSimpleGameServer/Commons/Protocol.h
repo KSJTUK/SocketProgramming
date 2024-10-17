@@ -9,7 +9,7 @@
 #include <chrono>
 #include "Types.h"
 
-#define USE_LOOP_BACK 0
+#define USE_LOOP_BACK 1
 
 // 인라인 상수 정의
 #if USE_LOOP_BACK
@@ -83,6 +83,7 @@ struct PacketObjectInfo : public PacketBase {
 	Position pos;
 	SIZE boxSize;
 	OBJECT_TYPE objectType;
+	DWORD color;
 
 	Direction2D dir;
 	float velocity;
