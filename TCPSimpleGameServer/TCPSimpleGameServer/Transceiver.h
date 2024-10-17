@@ -56,6 +56,10 @@ public:
 			packet.size,
 			0
 		);
+
+		if (SOCKET_ERROR == result) {
+			//std::cout << "[Client " << id << "] Occured Socket Error: Send Error" << std::endl;
+		}
 	}
 
 	template <typename PacketType> requires std::is_base_of_v<PacketBase, PacketType>
@@ -73,6 +77,10 @@ public:
 			packet.size,
 			0
 		);
+
+		if (SOCKET_ERROR == result) {
+			//std::cout << "[Client " << id << "] Occured Socket Error: Send Error" << std::endl;
+		}
 	}
 
 	// 같은 패킷을 보내는 경우 계속해서 만들필요는 없음.
@@ -84,6 +92,10 @@ public:
 			packet->size,
 			0
 		);
+
+		if (SOCKET_ERROR == result) {
+			//std::cout << "[Client " << packet->senderId << "] Occured Socket Error: Send Error" << std::endl;
+		}
 	}
 
 private:

@@ -12,6 +12,8 @@
 
 #include "Client.h"
 
+class Object;
+
 class GameServer {
 public:
 	GameServer();
@@ -60,6 +62,8 @@ public:
 
 	void SendClientsInfo();
 	void SendObjectsInfo();
+	Object* CreateObject(OBJECT_TYPE objType, Position pos, SIZE size);
+	bool AllocObject(OBJECT_TYPE objType, Position pos, SIZE size);
 
 public:
 	/* 게임 월드 작업 관련 함수들 */
@@ -83,5 +87,6 @@ private:
 	std::vector<std::thread> mClientServiceThreads;
 
 	std::vector<std::shared_ptr<Client>> mClients;
-	std::vector<std::unique_ptr<class Object>> mObjects;
+	std::array<bool, MAX_OBJECT> mObjectAlive{ };
+	std::vector<std::unique_ptr<Object>> mObjects;
 };

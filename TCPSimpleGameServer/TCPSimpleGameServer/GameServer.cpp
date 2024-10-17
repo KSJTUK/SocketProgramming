@@ -84,10 +84,42 @@ void GameServer::SendObjectsInfo()
 	}
 }
 
+Object* GameServer::CreateObject(OBJECT_TYPE objType, Position pos, SIZE size)
+{
+	// TODO 맘에 안듬
+	switch (objType) {
+	case WALL:
+		return new Wall{ pos, size };
+
+	case BULLET:
+		return new Bullet{ pos, size };
+	}
+
+	return nullptr;
+}
+
+bool GameServer::AllocObject(OBJECT_TYPE objType, Position pos, SIZE size)
+{
+	// TODO 너무 대충만들었다.
+	// 오브젝트 부분은 Object Pool을 이용하는게 좋을거 같음. 변경 예정.
+	for (int allocIdx{ }; auto& alive : mObjectAlive) {
+		if (not alive) {
+			alive = true;
+			mObjects[allocIdx].reset(CreateObject(objType, pos, size));
+			return true;
+		}
+
+		++allocIdx;
+	}
+
+	return false;
+}
+
 void GameServer::Update()
 {
 	static float updateDelay = 0.f;
-	static const float delayed = 1.0f / 30.0f;
+	static const float delayed = 1.0f / 60.0f;
+	static bool sendSwitch = false;
 
 	mTimer->Update();
 	mDeltaTime = mTimer->GetDeltaTime();
@@ -96,6 +128,7 @@ void GameServer::Update()
 	if (updateDelay < delayed) {
 		return;
 	}
+
 	mDeltaTime = updateDelay;
 
 	for (auto& client : mClients) {
@@ -107,9 +140,14 @@ void GameServer::Update()
 	        object->Update(mDeltaTime.load());
 	}
 
-	SendClientsInfo();
-	SendObjectsInfo();
+	if (sendSwitch) {
+		SendClientsInfo();
+	}
+	else {
+		SendObjectsInfo();
+	}
 
+	sendSwitch = !sendSwitch;
 	updateDelay = 0.0f;
 }
 
@@ -157,11 +195,12 @@ void GameServer::Init()
 	mAcceptThread = std::thread{ [=]() { Accept(); } };
 
 	mObjects.resize(MAX_OBJECT);
-	for (int i = 0; i < 10; ++i) {
-	    mObjects[i] = std::make_unique<Wall>(
-	        Position{ Random::GetUniformRandom<float>(0.0f, 800.0f), Random::GetUniformRandom<float>(0.0f, 600.0f) },
-	        SIZE{ 100, 100 }
-	    );
+	for (int i = 0; i < 500; ++i) {
+		AllocObject(
+			WALL,
+			Position{ Random::GetUniformRandom<float>(0.0f, 800.0f), Random::GetUniformRandom<float>(0.0f, 600.0f) },
+			SIZE{ Random::GetUniformRandom<long>(40, 100), Random::GetUniformRandom<long>(40, 100) }
+		);
 	}
 }
 

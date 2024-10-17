@@ -43,7 +43,9 @@ public:
 		);
 
 		if (SOCKET_ERROR == sendResult) {
+#ifdef _DEBUG || DEBUG
 			::MessageBoxA(nullptr, "Send Error", GetErrorString().c_str(), MB_OK | MB_ICONERROR);
+#endif
 			PostQuitMessage(0);
 		}
 	}
