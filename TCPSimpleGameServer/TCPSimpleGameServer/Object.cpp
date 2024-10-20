@@ -3,13 +3,12 @@
 #include "ProcessKeyInput.h"
 
 Object::Object(const Vec2D pos, SizeF boxSize, DWORD color, OBJECT_TYPE objType)
-	: mPos{ pos },
-	mBoxSize{ boxSize },
+	: mCollider{ std::make_unique<Collider>(pos, boxSize) },
 	mObjType{ objType },
-	mColor{ color },
-	mDirection{ 0, 0 },
-	mVelocity{ 0.f }
+	mColor{ color }
 {
+	mCollider->SetDirection(Vec2D{ });
+	mCollider->SetVelocity(0.0f);
 }
 
 Object::~Object()
@@ -18,7 +17,7 @@ Object::~Object()
 
 void Object::SetPosition(const Vec2D pos)
 {
-	mPos = pos;
+	mCollider->SetPosition(pos);
 }
 
 void Object::SetColor(const DWORD color)
@@ -33,12 +32,12 @@ OBJECT_TYPE Object::GetType() const
 
 Vec2D Object::GetPosition() const
 {
-	return mPos;
+	return mCollider->GetPosition();
 }
 
 SizeF Object::GetBoxSize() const
 {
-	return mBoxSize;
+	return mCollider->GetSize();
 }
 
 DWORD Object::GetColor() const
@@ -48,23 +47,22 @@ DWORD Object::GetColor() const
 
 Vec2D Object::GetDirection() const
 {
-	return mDirection;
+	return mCollider->GetDirection();
 }
 
 float Object::GetVelocity() const
 {
-	return mVelocity;
+	return mCollider->GetVelocity();
 }
 
 RECT Object::GetBox() const
 {
-	SizeF halfSize = { mBoxSize.w / 2, mBoxSize.h / 2 };
-	int l = static_cast<int>(mPos.x - halfSize.w);
-	int r = static_cast<int>(mPos.x + halfSize.w);
-	int t = static_cast<int>(mPos.y - halfSize.h);
-	int b = static_cast<int>(mPos.y + halfSize.h);
+	return mCollider->Rect();
+}
 
-	return RECT{ l, t, r, b };
+const Collider* Object::GetCollider() const
+{
+	return mCollider.get();
 }
 
 bool Object::CheckCollision(Object* const other)
@@ -74,8 +72,7 @@ bool Object::CheckCollision(Object* const other)
 
 void Object::Update(const float deltaTime)
 {
-	mPos.x += mDirection.x * mVelocity * deltaTime;
-	mPos.y += mDirection.y * mVelocity * deltaTime;
+	mCollider->Update(deltaTime);
 }
 
 /* ----------------------------------------

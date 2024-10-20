@@ -47,15 +47,18 @@ public:
 
 	void Update(const float deltaTime);
 
+	bool CheckCollision(class Object* const obj);
+	void HandleCollision(class Object* const obj);
+
 private:
 	std::mutex mStateLock;
 
 	Transceiver mTransceiver;
 	ProcessKeyInput mInputProcessor;
 
-	Vec2D mPosition{ };
-	float mVelocity{ };
-
 	CLIENT_STATE mClientState{ CLIENT_STATE::EXITED };
 	byte mId{ NULL_CLIENT_ID };
+
+	int mMoveDirIndex;
+	std::unique_ptr<class Collider> mCollider;
 };

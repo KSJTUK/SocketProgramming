@@ -24,6 +24,8 @@ public:
 
 	RECT GetBox() const;
 
+	const class Collider* GetCollider() const;
+
 public:
 	bool CheckCollision(Object* const other);
 
@@ -31,13 +33,10 @@ public:
 	virtual void HandleCollision(Object* const other) abstract;
 	
 private:
-	Vec2D mPos;
-	SizeF mBoxSize;
+	OBJECT_TYPE mObjType;
 	DWORD mColor;
 
-	OBJECT_TYPE mObjType;
-	Vec2D mDirection;
-	float mVelocity;
+	std::unique_ptr<class Collider> mCollider;
 };
 
 /* ----------------------------------------

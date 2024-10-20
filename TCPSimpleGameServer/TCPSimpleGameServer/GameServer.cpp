@@ -49,6 +49,24 @@ void GameServer::ProcessPacket(char* packet)
 	}
 }
 
+void GameServer::UpdateCollition(float deltaTime)
+{
+	for (int clientId = 0; clientId < MAX_CLIENT; ++clientId) {
+		auto& client = mClients[clientId];
+
+		//std::lock_guard stateGuard{ mClients[clientId]->GetMutex() };
+		if (client->GetState() != CLIENT_STATE::JOINED) {
+			continue;
+		}
+
+		for (auto& object : mObjects) {
+			if (object and client->CheckCollision(object.get())) {
+				client->HandleCollision(object.get());
+			}
+		}
+	}
+}
+
 void GameServer::SendClientsInfo()
 {
 	PacketPosition2D packet{ sizeof(PacketPosition2D), PACKET_POSITION2D, };
@@ -134,19 +152,21 @@ void GameServer::Update()
 
 	mDeltaTime = updateDelay;
 
-	for (auto& client : mClients) {
-		client->Update(mDeltaTime.load());
-	}
-
-	for (auto& object : mObjects) {
-	    if (object)
-	        object->Update(mDeltaTime.load());
-	}
-
 	if (sendSwitch) {
+        for (auto& client : mClients) {
+            client->Update(mDeltaTime.load());
+        }
+
+		UpdateCollition(mDeltaTime);
+
 		SendClientsInfo();
 	}
 	else {
+        for (auto& object : mObjects) {
+            if (object)
+                object->Update(mDeltaTime.load());
+        }
+
 		SendObjectsInfo();
 	}
 
@@ -197,13 +217,15 @@ void GameServer::Init()
 	CreateCoreObjects();
 	mAcceptThread = std::thread{ [=]() { Accept(); } };
 
+	float border = 300.0f;
 	mObjects.resize(MAX_OBJECT);
 	for (int i = 0; i < 500; ++i) {
 		AllocObject(
 			WALL,
-			Vec2D{ Random::GetUniformRandom<float>(0.0f, static_cast<float>(WORLD_SIZE.cx)), Random::GetUniformRandom<float>(0.0f, static_cast<float>(WORLD_SIZE.cy)) },
-			SizeF{ Random::GetUniformRandom<float>(40.0f, 100.0f), Random::GetUniformRandom<float>(40.0f, 100.0f) },
-			Random::GetRandomRGB()
+			Vec2D{ Random::GetUniformRandom<float>(border, static_cast<float>(WORLD_SIZE.cx) - border),
+					Random::GetUniformRandom<float>(border, static_cast<float>(WORLD_SIZE.cy) - border) },
+			SizeF{ 40.0f, 40.0f },
+			RGB(255, 0, 0)
 		);
 	}
 }

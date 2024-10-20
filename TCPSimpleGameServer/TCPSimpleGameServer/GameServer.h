@@ -60,6 +60,8 @@ public:
 
 	void ProcessPacket(char* packet);
 
+	void UpdateCollition(float deltaTime);
+
 	void SendClientsInfo();
 	void SendObjectsInfo();
 	Object* CreateObject(OBJECT_TYPE objType, Vec2D pos, SizeF size, DWORD color = RGB(255, 255, 255));

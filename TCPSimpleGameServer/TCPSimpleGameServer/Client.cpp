@@ -1,5 +1,8 @@
 #include "pch.h"
 #include "Client.h"
+#include "Object.h"
+#include "Collider.h"
+#include "Ray.h"
 
 /* ----------------------------------------
 *
@@ -8,18 +11,22 @@
   ---------------------------------------- */
 
 inline constexpr float MIN_WORLD_BORDER = 100.0f;
-inline constexpr float DEFAULT_SPEED = 1000.0f;
+inline constexpr float DEFAULT_SPEED = 300.0f;
 
 Client::Client()
 	: mId{ NULL_CLIENT_ID },
-	mPosition{ Random::GetUniformRandFloat(MIN_WORLD_BORDER, MIN_WORLD_BORDER * 2), Random::GetUniformRandFloat(MIN_WORLD_BORDER, MIN_WORLD_BORDER * 2) },
-	mVelocity{ DEFAULT_SPEED },
-	mClientState{ CLIENT_STATE::EXITED }
+	mCollider{ std::make_unique<Collider>() },
+	mClientState{ CLIENT_STATE::EXITED },
+	mMoveDirIndex{ MOVE_NONE }
 {
 	mInputProcessor.RegisterKeyFn(VK_LEFT, [=](float deltaTime) { MoveLeft(deltaTime); });
 	mInputProcessor.RegisterKeyFn(VK_RIGHT, [=](float deltaTime) { MoveRight(deltaTime); });
 	mInputProcessor.RegisterKeyFn(VK_UP, [=](float deltaTime) { MoveUp(deltaTime); });
 	mInputProcessor.RegisterKeyFn(VK_DOWN, [=](float deltaTime) { MoveDown(deltaTime); });
+
+	mCollider->SetPosition(Vec2D{ Random::GetUniformRandFloat(MIN_WORLD_BORDER, MIN_WORLD_BORDER * 2), Random::GetUniformRandFloat(MIN_WORLD_BORDER, MIN_WORLD_BORDER * 2) });
+	mCollider->SetSize(SizeF{ 40.0f, 40.0f });
+	mCollider->SetVelocity(DEFAULT_SPEED);
 }
 
 Client::~Client()
@@ -43,12 +50,12 @@ const byte Client::GetId() const
 
 Vec2D Client::GetPosition() const
 {
-	return mPosition;
+	return mCollider->GetPosition();
 }
 
 void Client::SetPosition(const Vec2D pos)
 {
-	mPosition = pos;
+	mCollider->SetPosition(pos);
 }
 
 void Client::Join(SOCKET clientSocket, byte id)
@@ -66,25 +73,42 @@ void Client::Exit()
 
 void Client::MoveLeft(float deltaTime)
 {
-	mPosition.x -= mVelocity * deltaTime;
+	mMoveDirIndex |= MOVE_LEFT;
 }
 
 void Client::MoveUp(float deltaTime)
 {
-	mPosition.y -= mVelocity * deltaTime;
+	mMoveDirIndex |= MOVE_TOP;
 }
 
 void Client::MoveRight(float deltaTime)
 {
-	mPosition.x += mVelocity * deltaTime;
+	mMoveDirIndex |= MOVE_RIGHT;
 }
 
 void Client::MoveDown(float deltaTime)
 {
-	mPosition.y += mVelocity * deltaTime;
+	mMoveDirIndex |= MOVE_BOTTOM;
 }
 
 void Client::Update(const float deltaTime)
 {
 	mInputProcessor.Update(deltaTime);
+	mCollider->SetDirection(directions[mMoveDirIndex]);
+	mCollider->Update(deltaTime);
+
+	mMoveDirIndex = MOVE_NONE;
+}
+
+bool Client::CheckCollision(Object* const obj)
+{
+	return mCollider->Intersect(*obj->GetCollider());
+}
+
+void Client::HandleCollision(Object* const obj)
+{
+	Vec2D slidingVector;
+	SlidingVector(slidingVector, *mCollider, *(obj->GetCollider()));
+
+	mCollider->SetPosition(mCollider->GetOldPosition() + slidingVector);
 }
