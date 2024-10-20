@@ -139,6 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Collider.h" />
     <ClInclude Include="DrawBuffer.h" />
     <ClInclude Include="GameFramework.h" />
     <ClInclude Include="Input.h" />
@@ -151,6 +152,7 @@
     <ClInclude Include="Timer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Collider.cpp" />
     <ClCompile Include="DrawBuffer.cpp" />
     <ClCompile Include="GameFramework.cpp" />
     <ClCompile Include="Input.cpp" />

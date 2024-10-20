@@ -26,6 +26,7 @@
 #include "Protocol.h"
 #include "Macros.h"
 #include "Random.h"
+#include "Collider.h"
 
 inline constexpr byte MAX_CLIENT = 64;
 inline constexpr byte NULL_CLIENT_ID = 0xff;

@@ -7,41 +7,41 @@
   ---------------------------------------- */
 
 class Player {
-	inline static constexpr unsigned int DEFAULT_SIZE = 40;
-	inline static constexpr float DEFAULT_SPEED = 300.0f;
+    inline static constexpr float DEFAULT_SIZE = 40.0f;
+    inline static constexpr float DEFAULT_SPEED = 300.0f;
 
 public:
-	Player();
-	Player(float x, float y);
-	Player(const Position pos);
-	~Player();
+    Player();
+    Player(float x, float y);
+    Player(const Vec2D pos);
+    ~Player();
 
 public:
-	// Setter
-	void SetPosition(const Position& position);
-	void SetDirection(char x, char y);
-	void SetDirection(Direction2D dir);
-	void SetValocity(float velocity);
+    // Setter
+    void SetPosition(const Vec2D& position);
+    void SetDirection(float  x, float y);
+    void SetDirection(Vec2D dir);
+    void SetValocity(float velocity);
 
-	// Getter
-	Direction2D GetDirection() const { return mDirection; }
-	Position GetPosition() const { return mPosition; }
-	float GetVelocity() const { return mVelocity; }
+    // Getter
+    Vec2D GetDirection() const { return mDirection; }
+    Vec2D GetPosition() const { return mPosition; }
+    float GetVelocity() const { return mVelocity; }
 
-	void Update(const float deltaTime);
-	void Render();
+    void Update(const float deltaTime);
+    void Render();
 
 private:
-	// 움직임 관련
-	Direction2D mDirection{ };
-	SIZE mSize{ };
-	DWORD mColor{ RGB(0, 255, 0) };
-	float mVelocity{ };
-	Position mPosition{ };
+    // 움직임 관련
+    Vec2D mDirection{ };
+    SizeF mSize{ };
+    DWORD mColor{ RGB(0, 255, 0) };
+    float mVelocity{ };
+    Vec2D mPosition{ };
 
-	bool mPlayable{ false };
+    bool mPlayable{ false };
 
-	// 플레이어가 그려질 도형정보
-	std::string mName{ "Position" };
-	std::shared_ptr<Shape> mShape{ };
+    // 플레이어가 그려질 도형정보
+    std::string mName{ "Position" };
+    std::shared_ptr<Shape> mShape{ };
 };

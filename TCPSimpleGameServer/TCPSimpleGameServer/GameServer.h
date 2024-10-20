@@ -62,8 +62,8 @@ public:
 
 	void SendClientsInfo();
 	void SendObjectsInfo();
-	Object* CreateObject(OBJECT_TYPE objType, Position pos, SIZE size, DWORD color = RGB(255, 255, 255));
-	bool AllocObject(OBJECT_TYPE objType, Position pos, SIZE size, DWORD color=RGB(255, 255, 255));
+	Object* CreateObject(OBJECT_TYPE objType, Vec2D pos, SizeF size, DWORD color = RGB(255, 255, 255));
+	bool AllocObject(OBJECT_TYPE objType, Vec2D pos, SizeF size, DWORD color=RGB(255, 255, 255));
 
 public:
 	/* 게임 월드 작업 관련 함수들 */

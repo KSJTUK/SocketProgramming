@@ -21,7 +21,7 @@ PointShape::PointShape()
 {
 } 
 
-void PointShape::Render(SIZE size, Position pos, DWORD color, const std::shared_ptr<class DrawBuffer>& drawBuffer)
+void PointShape::Render(SizeF size, Vec2D pos, DWORD color, const std::shared_ptr<class DrawBuffer>& drawBuffer)
 {
 	if (not drawBuffer->IsInCamera(pos)) {
 		return;
@@ -44,7 +44,7 @@ Square::Square()
 
 Square::~Square() = default;
 
-void Square::Render(SIZE size, Position pos, DWORD color, const std::shared_ptr<class DrawBuffer>& drawBuffer)
+void Square::Render(SizeF size, Vec2D pos, DWORD color, const std::shared_ptr<class DrawBuffer>& drawBuffer)
 {
 	if (not drawBuffer->IsInCamera(pos)) {
 		return;
@@ -80,7 +80,7 @@ Circle::~Circle()
 {
 }
 
-void Circle::Render(SIZE size, Position pos, DWORD color, const std::shared_ptr<DrawBuffer>& drawBuffer)
+void Circle::Render(SizeF size, Vec2D pos, DWORD color, const std::shared_ptr<DrawBuffer>& drawBuffer)
 {
 	if (not drawBuffer->IsInCamera(pos)) {
 		return;

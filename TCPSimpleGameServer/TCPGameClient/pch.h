@@ -37,6 +37,7 @@
 #include "Macros.h"
 #include "Random.h"
 #include "Shape.h"
+#include "Collider.h"
 
 #define NETWORK_DEBUG 1
 

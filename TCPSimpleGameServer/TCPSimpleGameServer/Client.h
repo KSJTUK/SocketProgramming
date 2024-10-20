@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Transceiver.h"
-#include "ProcessKeyInput.h"	
+#include "ProcessKeyInput.h"
 
 enum class CLIENT_STATE : char {
 	JOINED,
@@ -28,12 +28,12 @@ public:
 	Transceiver& GetTransceiver();
 	ProcessKeyInput& GetInputProcessor();
 	const byte GetId() const;
-	Position GetPosition() const;
+	Vec2D GetPosition() const;
 	CLIENT_STATE GetState() const { return mClientState; }
 
 	std::mutex& GetMutex() { return mStateLock; }
 
-	void SetPosition(const Position pos);
+	void SetPosition(const Vec2D pos);
 
 public:
 	void Join(SOCKET clientSocket, byte id);
@@ -53,7 +53,7 @@ private:
 	Transceiver mTransceiver;
 	ProcessKeyInput mInputProcessor;
 
-	Position mPosition{ };
+	Vec2D mPosition{ };
 	float mVelocity{ };
 
 	CLIENT_STATE mClientState{ CLIENT_STATE::EXITED };

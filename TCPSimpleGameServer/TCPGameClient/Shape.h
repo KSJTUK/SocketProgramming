@@ -15,7 +15,7 @@ public:
 	virtual ~Shape();
 
 public:
-	virtual void Render(SIZE size, Position pos, DWORD color, const std::shared_ptr<DrawBuffer>& drawBuffer) abstract;
+	virtual void Render(SizeF size, Vec2D pos, DWORD color, const std::shared_ptr<DrawBuffer>& drawBuffer) abstract;
 };
 
 
@@ -31,7 +31,7 @@ public:
 	explicit PointShape();
 
 public:
-	virtual void Render(SIZE size, Position pos, DWORD color, const std::shared_ptr<DrawBuffer>& drawBuffer) override;
+	virtual void Render(SizeF size, Vec2D pos, DWORD color, const std::shared_ptr<DrawBuffer>& drawBuffer) override;
 };
 
 
@@ -48,7 +48,7 @@ public:
 	virtual ~Square();
 
 public:
-	virtual void Render(SIZE size, Position pos, DWORD color, const std::shared_ptr<DrawBuffer>& drawBuffer) override;
+	virtual void Render(SizeF size, Vec2D pos, DWORD color, const std::shared_ptr<DrawBuffer>& drawBuffer) override;
 };
 
 /* ----------------------------------------
@@ -63,7 +63,7 @@ public:
 	virtual ~Circle();
 
 public:
-	virtual void Render(SIZE size, Position pos, DWORD color, const std::shared_ptr<DrawBuffer>& drawBuffer) override;
+	virtual void Render(SizeF size, Vec2D pos, DWORD color, const std::shared_ptr<DrawBuffer>& drawBuffer) override;
 };
 
 /* ----------------------------------------

@@ -21,7 +21,7 @@ DrawBuffer::~DrawBuffer()
 	ReleaseDC(mWindowInfo.windowHandle, mMainFrameDC);
 }
 
-void DrawBuffer::SetCameraPosition(Position cameraPosition)
+void DrawBuffer::SetCameraPosition(Vec2D cameraPosition)
 {
 	mCameraPosition = cameraPosition;
 
@@ -35,7 +35,7 @@ void DrawBuffer::SetBackGroundColor(DWORD bgColor)
 	mBackGroundColor = bgColor;
 }
 
-Position DrawBuffer::GetCameraPosition() const
+Vec2D DrawBuffer::GetCameraPosition() const
 {
 	return mCameraPosition;
 }
@@ -54,7 +54,7 @@ HDC DrawBuffer::GetMemDC() const
 	return mMemDC;
 }
 
-bool DrawBuffer::IsInCamera(Position objectPos) const
+bool DrawBuffer::IsInCamera(Vec2D objectPos) const
 {
 	return mValidBufferRect.Contains(objectPos);
 }
@@ -67,7 +67,7 @@ void DrawBuffer::DrawString(std::string_view str, const int x, const int y) cons
 
 void DrawBuffer::CleanupBuffer()
 {
-	auto [l, t, r, b] = mValidBufferRect.GetRect();
+	auto [l, t, r, b] = mValidBufferRect.Rect();
 	SetBrush(mBackGroundColor);
 	Rectangle(mMemDC, l, t, r, b);
 	ResetBrush();

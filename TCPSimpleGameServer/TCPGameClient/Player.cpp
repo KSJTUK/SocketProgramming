@@ -22,7 +22,7 @@ Player::Player(float x, float y)
 {
 }
 
-Player::Player(const Position pos)
+Player::Player(const Vec2D pos)
 	: mPosition{ pos },
 	mSize{ DEFAULT_SIZE, DEFAULT_SIZE },
 	mShape{ Shapes::gSquare },
@@ -34,17 +34,17 @@ Player::~Player()
 {
 }
 
-void Player::SetPosition(const Position& position)
+void Player::SetPosition(const Vec2D& position)
 {
 	mPosition = position;
 }
 
-void Player::SetDirection(char x, char y)
+void Player::SetDirection(float x, float y)
 {
 	mDirection = { x, y };
 }
 
-void Player::SetDirection(Direction2D dir)
+void Player::SetDirection(Vec2D dir)
 {
 	mDirection = dir;
 }

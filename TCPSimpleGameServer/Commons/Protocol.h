@@ -41,11 +41,11 @@ enum {
 };
 
 struct ObjectInfo {
-	Position pos;
+	Vec2D pos;
 	SIZE boxSize;
 	OBJECT_TYPE objectType;
 
-	Direction2D dir;
+	Vec2D dir;
 	float velocity;
 };
 
@@ -69,34 +69,34 @@ struct PacketPlayerInput : public PacketBase {
 };
 
 struct PacketPlayerJoin : public PacketBase {
-	Position pos;
+	Vec2D pos;
 };
 
 struct PacketPlayerExit : public PacketBase {
 };
 
 struct PacketPosition2D : public PacketBase {
-	Position pos;
+	Vec2D pos;
 };
 
 struct PacketObjectInfo : public PacketBase {
-	Position pos;
-	SIZE boxSize;
+	Vec2D pos;
+	SizeF boxSize;
 	OBJECT_TYPE objectType;
 	DWORD color;
 
-	Direction2D dir;
+	Vec2D dir;
 	float velocity;
 	unsigned short objectIndex;
 };
 
 struct PacketFireBullet : public PacketBase {
-	Position pos;
+	Vec2D pos;
 	SIZE boxSize;
 	OBJECT_TYPE objectType;
 	DWORD color;
 
-	Direction2D dir;
+	Vec2D dir;
 	float velocity;
 	unsigned short objectIndex;
 };

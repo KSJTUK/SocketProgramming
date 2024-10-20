@@ -2,7 +2,7 @@
 #include "Object.h"
 #include "ProcessKeyInput.h"
 
-Object::Object(const Position pos, SIZE boxSize, DWORD color, OBJECT_TYPE objType)
+Object::Object(const Vec2D pos, SizeF boxSize, DWORD color, OBJECT_TYPE objType)
 	: mPos{ pos },
 	mBoxSize{ boxSize },
 	mObjType{ objType },
@@ -16,7 +16,7 @@ Object::~Object()
 {
 }
 
-void Object::SetPosition(const Position pos)
+void Object::SetPosition(const Vec2D pos)
 {
 	mPos = pos;
 }
@@ -31,12 +31,12 @@ OBJECT_TYPE Object::GetType() const
 	return mObjType;
 }
 
-Position Object::GetPosition() const
+Vec2D Object::GetPosition() const
 {
 	return mPos;
 }
 
-SIZE Object::GetBoxSize() const
+SizeF Object::GetBoxSize() const
 {
 	return mBoxSize;
 }
@@ -46,7 +46,7 @@ DWORD Object::GetColor() const
 	return mColor;
 }
 
-Direction2D Object::GetDirection() const
+Vec2D Object::GetDirection() const
 {
 	return mDirection;
 }
@@ -58,31 +58,24 @@ float Object::GetVelocity() const
 
 RECT Object::GetBox() const
 {
-	SIZE halfSize = { mBoxSize.cx / 2, mBoxSize.cy / 2 };
-	int l = static_cast<int>(mPos.x) - halfSize.cx;
-	int r = static_cast<int>(mPos.x) + halfSize.cx;
-	int t = static_cast<int>(mPos.y) - halfSize.cy;
-	int b = static_cast<int>(mPos.y) + halfSize.cy;
+	SizeF halfSize = { mBoxSize.w / 2, mBoxSize.h / 2 };
+	int l = static_cast<int>(mPos.x - halfSize.w);
+	int r = static_cast<int>(mPos.x + halfSize.w);
+	int t = static_cast<int>(mPos.y - halfSize.h);
+	int b = static_cast<int>(mPos.y + halfSize.h);
 
 	return RECT{ l, t, r, b };
 }
 
 bool Object::CheckCollision(Object* const other)
 {
-	auto [isIntersect, intersectArea] = RECTEX::Intersect(mPos, mBoxSize, other->mPos, other->mBoxSize);
-	if (not isIntersect) {
-		return false;
-	}
-
-	HandleCollision(other);
-
 	return true;
 }
 
 void Object::Update(const float deltaTime)
 {
-	mPos.x += mDirection.dx * mVelocity * deltaTime;
-	mPos.y += mDirection.dy * mVelocity * deltaTime;
+	mPos.x += mDirection.x * mVelocity * deltaTime;
+	mPos.y += mDirection.y * mVelocity * deltaTime;
 }
 
 /* ----------------------------------------

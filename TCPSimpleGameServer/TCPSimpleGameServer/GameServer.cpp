@@ -87,7 +87,7 @@ void GameServer::SendObjectsInfo()
 	}
 }
 
-Object* GameServer::CreateObject(OBJECT_TYPE objType, Position pos, SIZE size, DWORD color)
+Object* GameServer::CreateObject(OBJECT_TYPE objType, Vec2D pos, SizeF size, DWORD color)
 {
 	// TODO 맘에 안듬
 	switch (objType) {
@@ -101,7 +101,7 @@ Object* GameServer::CreateObject(OBJECT_TYPE objType, Position pos, SIZE size, D
 	return nullptr;
 }
 
-bool GameServer::AllocObject(OBJECT_TYPE objType, Position pos, SIZE size, DWORD color)
+bool GameServer::AllocObject(OBJECT_TYPE objType, Vec2D pos, SizeF size, DWORD color)
 {
 	// TODO 너무 대충만들었다.
 	// 오브젝트 부분은 Object Pool을 이용하는게 좋을거 같음. 변경 예정.
@@ -201,8 +201,8 @@ void GameServer::Init()
 	for (int i = 0; i < 500; ++i) {
 		AllocObject(
 			WALL,
-			Position{ Random::GetUniformRandom<float>(0.0f, WORLD_SIZE.cx), Random::GetUniformRandom<float>(0.0f, WORLD_SIZE.cy) },
-			SIZE{ Random::GetUniformRandom<long>(40, 100), Random::GetUniformRandom<long>(40, 100) },
+			Vec2D{ Random::GetUniformRandom<float>(0.0f, static_cast<float>(WORLD_SIZE.cx)), Random::GetUniformRandom<float>(0.0f, static_cast<float>(WORLD_SIZE.cy)) },
+			SizeF{ Random::GetUniformRandom<float>(40.0f, 100.0f), Random::GetUniformRandom<float>(40.0f, 100.0f) },
 			Random::GetRandomRGB()
 		);
 	}

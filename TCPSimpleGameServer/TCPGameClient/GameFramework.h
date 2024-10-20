@@ -31,8 +31,8 @@ public:
 	void CreateObjects();
 
 	// 다른 플레이어 접속, 퇴장, 업데이트 처리
-	void JoinOtherPlayer(const byte id, const Position pos);
-	void UpdateJoinedPlayer(const byte id, const Position pos);
+	void JoinOtherPlayer(const byte id, const Vec2D pos);
+	void UpdateJoinedPlayer(const byte id, const Vec2D pos);
 	void ExitPlayer(const byte id);
 
 	// 핑에 대한 결과를 받는 함수

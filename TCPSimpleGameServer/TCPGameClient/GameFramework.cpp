@@ -124,14 +124,14 @@ void GameFramework::CreateObjects()
     mObjects.resize(MAX_OBJECT);
 }
 
-void GameFramework::JoinOtherPlayer(const byte id, const Position pos)
+void GameFramework::JoinOtherPlayer(const byte id, const Vec2D pos)
 {
     std::lock_guard playerGuard{ mPlayerLock };
     // 플레이어 추가
     mOtherPlayers.emplace(id, std::make_unique<Player>(pos));
 }
 
-void GameFramework::UpdateJoinedPlayer(const byte id, const Position pos)
+void GameFramework::UpdateJoinedPlayer(const byte id, const Vec2D pos)
 {
     if (id == gServerService.GetId()) {
         mPlayer->SetPosition(pos);

@@ -41,12 +41,12 @@ const byte Client::GetId() const
 	return mId;
 }
 
-Position Client::GetPosition() const
+Vec2D Client::GetPosition() const
 {
 	return mPosition;
 }
 
-void Client::SetPosition(const Position pos)
+void Client::SetPosition(const Vec2D pos)
 {
 	mPosition = pos;
 }

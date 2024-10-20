@@ -8,18 +8,18 @@
 
 class Object abstract {
 public:
-	Object(const Position pos, SIZE boxSize, DWORD color=RGB(255, 255, 255), OBJECT_TYPE objType=NONE);
+	Object(const Vec2D pos, SizeF boxSize, DWORD color=RGB(255, 255, 255), OBJECT_TYPE objType=NONE);
 	virtual ~Object();
 
 public:
 	void SetColor(const DWORD color);
-	void SetPosition(const Position pos);
+	void SetPosition(const Vec2D pos);
 
 	OBJECT_TYPE GetType() const;
-	Position GetPosition() const;
-	SIZE GetBoxSize() const;
+	Vec2D GetPosition() const;
+	SizeF GetBoxSize() const;
 	DWORD GetColor() const;
-	Direction2D GetDirection() const;
+	Vec2D GetDirection() const;
 	float GetVelocity() const;
 
 	RECT GetBox() const;
@@ -31,12 +31,12 @@ public:
 	virtual void HandleCollision(Object* const other) abstract;
 	
 private:
-	Position mPos;
-	SIZE mBoxSize;
+	Vec2D mPos;
+	SizeF mBoxSize;
 	DWORD mColor;
 
 	OBJECT_TYPE mObjType;
-	Direction2D mDirection;
+	Vec2D mDirection;
 	float mVelocity;
 };
 
@@ -48,7 +48,7 @@ private:
 
 class Wall : public Object {
 public:
-	Wall(const Position pos, SIZE boxSize, DWORD color) : Object{ pos, boxSize, color, WALL } { }
+	Wall(const Vec2D pos, SizeF boxSize, DWORD color) : Object{ pos, boxSize, color, WALL } { }
 	virtual ~Wall() { } 
 
 public:
@@ -63,7 +63,7 @@ public:
 
 class Bullet : public Object {
 public:
-	Bullet(const Position pos, SIZE boxSize, DWORD color) : Object{ pos, boxSize, color, BULLET } { }
+	Bullet(const Vec2D pos, SizeF boxSize, DWORD color) : Object{ pos, boxSize, color, BULLET } { }
 	virtual ~Bullet() { }
 
 public:
