@@ -90,4 +90,15 @@ struct PacketObjectInfo : public PacketBase {
 	unsigned short objectIndex;
 };
 
+struct PacketFireBullet : public PacketBase {
+	Position pos;
+	SIZE boxSize;
+	OBJECT_TYPE objectType;
+	DWORD color;
+
+	Direction2D dir;
+	float velocity;
+	unsigned short objectIndex;
+};
+
 #pragma pack(pop)

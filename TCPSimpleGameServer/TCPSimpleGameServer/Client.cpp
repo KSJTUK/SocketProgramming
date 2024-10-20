@@ -12,7 +12,6 @@ inline constexpr float DEFAULT_SPEED = 1000.0f;
 
 Client::Client()
 	: mId{ NULL_CLIENT_ID },
-	//mPosition{ Random::GetUniformRandFloat(MIN_WORLD_BORDER, WORLD_SIZE.cx - MIN_WORLD_BORDER), Random::GetUniformRandFloat(MIN_WORLD_BORDER, WORLD_SIZE.cy - MIN_WORLD_BORDER) },
 	mPosition{ Random::GetUniformRandFloat(MIN_WORLD_BORDER, MIN_WORLD_BORDER * 2), Random::GetUniformRandFloat(MIN_WORLD_BORDER, MIN_WORLD_BORDER * 2) },
 	mVelocity{ DEFAULT_SPEED },
 	mClientState{ CLIENT_STATE::EXITED }

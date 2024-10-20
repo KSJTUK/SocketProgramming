@@ -22,6 +22,7 @@ void GameServer::ProcessPacket(char* packet)
 
 	switch (type) {
 	case PACKET_PLAYER_CONNECT:
+		std::cout << "Player Connected" << std::endl;
 		Broadcast<PacketPlayerJoin>(PACKET_PLAYER_JOIN, senderId, packet);
 		SendOtherClientsSession(senderId);
 		break;
@@ -37,6 +38,7 @@ void GameServer::ProcessPacket(char* packet)
 		break;
 
 	case PACKET_PLAYER_EXIT:
+		std::cout << "Player Exited" << std::endl;
 		Broadcast<PacketPlayerExit>(PACKET_PLAYER_EXIT, senderId, packet);
 		ExitClient(senderId);
 		break;
@@ -64,7 +66,7 @@ void GameServer::SendObjectsInfo()
 {
 	PacketObjectInfo packet{ sizeof(PacketObjectInfo), PACKET_OBJECT_INFO, };
 
-	for (unsigned short count{ 0 }; auto & object : mObjects) {
+	for (unsigned short count{ 0 }; auto& object : mObjects) {
 		if (not object)
 			continue;
 
