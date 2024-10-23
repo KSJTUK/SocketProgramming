@@ -33,6 +33,8 @@
 #include <mutex>
 #include <atomic>
 
+#include <concurrent_queue.h>
+
 #include "Protocol.h"
 #include "Macros.h"
 #include "Random.h"

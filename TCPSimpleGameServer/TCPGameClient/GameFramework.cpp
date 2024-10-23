@@ -18,24 +18,16 @@
 LRESULT GameFramework::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message) {
+    case WM_CREATE:
     case WM_KEYDOWN:
     case WM_KEYUP:
-        gGameFramework.OnProcessingKeyboard(hWnd, message, wParam, lParam);
-        break;
-
     case WM_LBUTTONDOWN:
     case WM_LBUTTONUP:
     case WM_RBUTTONDOWN:
     case WM_RBUTTONUP:
-        gGameFramework.OnProcessingMouse(hWnd, message, wParam, lParam);
-        break;
-
     case WM_SETFOCUS:
-        gGameFramework.SetKeyboardFocuse(true);
-        break;
-
     case WM_KILLFOCUS:
-        gGameFramework.SetKeyboardFocuse(false);
+        gGameFramework.OnProcessingWindowMessage(hWnd, message, wParam, lParam);
         break;
 
     case WM_COMMAND:
@@ -186,6 +178,38 @@ void GameFramework::UpdateObject(PacketObjectInfo* objectInfo)
 
     mObjects[idx]->SetPosition(objectInfo->pos);
     mObjects[idx]->SetColor(objectInfo->color);
+}
+
+void GameFramework::OnProcessingWindowMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    char str[128];
+    switch(message) {
+    case WM_CREATE:
+        break;
+
+    case WM_KEYDOWN:
+    case WM_KEYUP:
+        OnProcessingKeyboard(hWnd, message, wParam, lParam);
+        break;
+
+    case WM_LBUTTONDOWN:
+    case WM_LBUTTONUP:
+    case WM_RBUTTONDOWN:
+    case WM_RBUTTONUP:
+        OnProcessingMouse(hWnd, message, wParam, lParam);
+        break;
+
+    case WM_SETFOCUS:
+        SetKeyboardFocuse(true);
+        break;
+
+    case WM_KILLFOCUS:
+        SetKeyboardFocuse(false);
+        break;
+
+    case WM_COMMAND:
+        break;
+    }
 }
 
 // 마우스 메시지 처리 함수

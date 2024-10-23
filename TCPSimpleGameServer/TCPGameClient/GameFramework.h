@@ -47,6 +47,7 @@ public:
 	void UpdateObject(PacketObjectInfo* objectInfo);
 
 	// 윈도우 메시지 처리
+	void OnProcessingWindowMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	void OnProcessingMouse(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	void OnProcessingKeyboard(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
@@ -62,6 +63,8 @@ private:
 	void RegisterWindow();
 
 private:
+	HWND mEditWindow{ nullptr };
+
 	// instance, window 핸들
 	HINSTANCE		mInstanceHandle{ };
 	WindowInfo		mWindowInfo{ };

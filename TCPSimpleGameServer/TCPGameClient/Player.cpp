@@ -67,4 +67,8 @@ void Player::Render()
 	::TextOutA(memDC, (int)x - 20 - strSize * 2, (int)y - 40, positionStr.c_str(), strSize);
 
 	mShape->Render(mSize, mPosition, mColor, gGameFramework.GetDrawBuffer());
+
+#if DEBUGMODE
+	gLineShape->Render(GetOldPosition(), GetOldPosition() + mSliding, 2, RGB(0, 0, 255), drawBuffer);
+#endif
 }
