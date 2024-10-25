@@ -19,13 +19,19 @@ inline constexpr const char* SERVER_IP = "192.168.23.192";
 #endif
 inline constexpr unsigned short SERVER_PORT = 7777;
 inline constexpr unsigned short MAX_OBJECT = 1000;
+enum OBJECT_POOL_MAX {
+	OBJECT_POOL_WALL = 500,
+	OBJECT_POOL_BULLET = 100,
+	OBJECT_POOL_BALL = 100,
+};
 
 using byte = unsigned char;
 
 enum OBJECT_TYPE {
 	NONE,
 	WALL,
-	BULLET
+	BULLET,
+	BALL
 };
 
 enum {

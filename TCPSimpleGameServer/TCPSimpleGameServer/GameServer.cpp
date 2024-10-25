@@ -10,6 +10,9 @@
 *
   ---------------------------------------- */
 
+ObjectPool<class Wall, OBJECT_POOL_MAX::OBJECT_POOL_WALL> GameServer::walls;
+ObjectPool<class Ball, OBJECT_POOL_MAX::OBJECT_POOL_BALL> GameServer::balls;
+
 GameServer::GameServer() = default;
 GameServer::~GameServer() = default;
 
@@ -49,7 +52,7 @@ void GameServer::ProcessPacket(char* packet)
 	}
 }
 
-void GameServer::UpdateCollition(float deltaTime)
+void GameServer::UpdateCollision(float deltaTime)
 {
 	for (int clientId = 0; clientId < MAX_CLIENT; ++clientId) {
 		auto& client = mClients[clientId];
@@ -59,12 +62,21 @@ void GameServer::UpdateCollition(float deltaTime)
 			continue;
 		}
 
-		for (auto& object : mObjects) {
-			if (object and client->CheckCollision(object.get())) {
-				client->HandleCollision(object.get());
+		for (auto& wall : mWalls) {
+			if (wall and client->CheckCollision(wall)) {
+				client->HandleCollision(wall);
 			}
 		}
 	}
+
+	//for (auto& ball : mBalls) {
+	//	for (auto& wall : mWalls) {
+	//		if (ball->CheckCollision(wall)) {
+	//			ball->HandleCollision(wall);
+	//			wall->HandleCollision(ball);
+	//		}
+	//	}
+	//}
 }
 
 void GameServer::SendClientsInfo()
@@ -84,16 +96,16 @@ void GameServer::SendObjectsInfo()
 {
 	PacketObjectInfo packet{ sizeof(PacketObjectInfo), PACKET_OBJECT_INFO, };
 
-	for (unsigned short count{ 0 }; auto& object : mObjects) {
-		if (not object)
+	for (unsigned short count{ 0 }; auto& ball : mBalls) {
+		if (not ball)
 			continue;
 
-		packet.pos = object->GetPosition();
-		packet.boxSize = object->GetBoxSize();
-		packet.dir = object->GetDirection();
-		packet.velocity = object->GetVelocity();
-		packet.color = object->GetColor();
-		packet.objectType = object->GetType();
+		packet.pos = ball->GetPosition();
+		packet.boxSize = ball->GetBoxSize();
+		packet.dir = ball->GetDirection();
+		packet.velocity = ball->GetVelocity();
+		packet.color = ball->GetColor();
+		packet.objectType = ball->GetType();
 		packet.objectIndex = count++;
 
 		for (int clientId = 0; clientId < MAX_CLIENT; ++clientId) {
@@ -105,41 +117,35 @@ void GameServer::SendObjectsInfo()
 	}
 }
 
-Object* GameServer::CreateObject(OBJECT_TYPE objType, Vec2D pos, SizeF size, DWORD color)
+void GameServer::SendStaticObjectInfo()
 {
-	// TODO 맘에 안듬
-	switch (objType) {
-	case WALL:
-		return new Wall{ pos, size, color };
+	PacketObjectInfo packet{ sizeof(PacketObjectInfo), PACKET_OBJECT_INFO, };
 
-	case BULLET:
-		return new Bullet{ pos, size, color };
-	}
+	for (unsigned short count{ 0 }; auto & wall : mWalls) {
+		if (not wall)
+			continue;
 
-	return nullptr;
-}
+		packet.pos = wall->GetPosition();
+		packet.boxSize = wall->GetBoxSize();
+		packet.dir = wall->GetDirection();
+		packet.velocity = wall->GetVelocity();
+		packet.color = wall->GetColor();
+		packet.objectType = wall->GetType();
+		packet.objectIndex = count++;
 
-bool GameServer::AllocObject(OBJECT_TYPE objType, Vec2D pos, SizeF size, DWORD color)
-{
-	// TODO 너무 대충만들었다.
-	// 오브젝트 부분은 Object Pool을 이용하는게 좋을거 같음. 변경 예정.
-	for (int allocIdx{ }; auto& alive : mObjectAlive) {
-		if (not alive) {
-			alive = true;
-			mObjects[allocIdx].reset(CreateObject(objType, pos, size, color));
-			return true;
+		for (int clientId = 0; clientId < MAX_CLIENT; ++clientId) {
+			std::lock_guard stateGuard{ mClients[clientId]->GetMutex() };
+			if (mClients[clientId]->GetState() == CLIENT_STATE::JOINED) {
+				mClients[clientId]->GetTransceiver().Send(&packet);
+			}
 		}
-
-		++allocIdx;
 	}
-
-	return false;
 }
 
 void GameServer::Update()
 {
 	static float updateDelay = 0.f;
-	static const float delayed = 1.0f / 60.0f;
+	static const float delayed = 1.0f / 30.0f;
 	static bool sendSwitch = false;
 
 	mTimer->Update();
@@ -157,16 +163,12 @@ void GameServer::Update()
             client->Update(mDeltaTime.load());
         }
 
-		UpdateCollition(mDeltaTime);
+		UpdateCollision(mDeltaTime);
 
 		SendClientsInfo();
 	}
 	else {
-        for (auto& object : mObjects) {
-            if (object)
-                object->Update(mDeltaTime.load());
-        }
-
+		SendStaticObjectInfo();
 		SendObjectsInfo();
 	}
 
@@ -218,15 +220,30 @@ void GameServer::Init()
 	mAcceptThread = std::thread{ [=]() { Accept(); } };
 
 	float border = 300.0f;
-	mObjects.resize(MAX_OBJECT);
-	for (int i = 0; i < 500; ++i) {
-		AllocObject(
-			WALL,
-			Vec2D{ Random::GetUniformRandom<float>(border, static_cast<float>(WORLD_SIZE.cx) - border),
-					Random::GetUniformRandom<float>(border, static_cast<float>(WORLD_SIZE.cy) - border) },
-			SizeF{ 40.0f, 40.0f },
-			RGB(255, 0, 0)
-		);
+	for (int i = 0; i < 100; ++i) {
+		auto wall = walls.AcquireObject();
+
+		auto pos = Vec2D{ Random::GetUniformRandom<float>(border, static_cast<float>(WORLD_SIZE.cx) - border), Random::GetUniformRandom<float>(border, static_cast<float>(WORLD_SIZE.cy) - border) };
+		auto size = SizeF{ 40.0f, 40.0f };
+		auto color = RGB(255, 0, 0);
+
+		wall->SetPosition(pos);
+		wall->SetSize(size);
+		wall->SetColor(color);
+		mWalls.push_back(wall);
+	}
+
+	for (int i = 0; i < balls.Size(); ++i) {
+		auto ball = balls.AcquireObject();
+
+		auto pos = Vec2D{ Random::GetUniformRandom<float>(border, static_cast<float>(WORLD_SIZE.cx) - border), Random::GetUniformRandom<float>(border, static_cast<float>(WORLD_SIZE.cy) - border) };
+		auto size = SizeF{ 10.0f, 10.0f };
+		auto color = RGB(0, 0, 255);
+
+		ball->SetPosition(pos);
+		ball->SetSize(size);
+		ball->SetColor(color);
+		mBalls.push_back(ball);
 	}
 }
 

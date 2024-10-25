@@ -150,6 +150,7 @@
     <ClInclude Include="ServerService.h" />
     <ClInclude Include="Shape.h" />
     <ClInclude Include="Timer.h" />
+    <ClInclude Include="ObjectPool.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Collider.cpp" />

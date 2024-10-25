@@ -38,6 +38,15 @@ inline Vec2D Reflect(const Vec2D& incident, const Vec2D& planeA, const Vec2D& pl
     return reflectionVec;
 }
 
+inline Vec2D Sliding(const Vec2D& incident, const Vec2D& planeA, const Vec2D& planeB)
+{
+    Vec2D normal = CCWLineNormal(planeA, planeB);
+    float dotResult = Vec2D::Dot(normal, incident);
+
+    Vec2D slidingVec = incident - (dotResult * normal);
+    return slidingVec;
+}
+
 inline bool LineIntersect(const Vec2D& rayStart, const Vec2D& rayEnd, const Vec2D& planeA, const Vec2D& planeB)
 {
     int AB = CCW(planeA, planeB, rayStart) * CCW(planeA, planeB, rayEnd);
@@ -72,13 +81,25 @@ inline void SlidingVector(OUT Vec2D& slidingVec, const Vec2D& pos, const Vec2D& 
     Vec2D moveVec = pos - oldPos;
     auto nearlestPlane = NearlestPlane(Ray{ oldPos, pos }, collider);
     auto [lineA, lineB] = collider.Plane(nearlestPlane);
-    Vec2D planeNormal = CCWLineNormal(lineA, lineB);
 
-    float dotResult = Vec2D::Dot(planeNormal, moveVec);
-    slidingVec = moveVec - dotResult * planeNormal;
+    slidingVec = Sliding(moveVec, lineA, lineB);
 }
 
 inline void SlidingVector(OUT Vec2D& slidingVec, const Collider& collider, const Collider& otherCollider)
 {
     SlidingVector(slidingVec, collider.GetPosition(), collider.GetOldPosition(), otherCollider);
+}
+
+inline void ReflectVector(OUT Vec2D reflectVec, const Vec2D& pos, const Vec2D& oldPos, const Collider& collider)
+{
+    Vec2D moveVec = pos - oldPos;
+    auto nearlestPlane = NearlestPlane(Ray{ oldPos, pos }, collider);
+    auto [lineA, lineB] = collider.Plane(nearlestPlane);
+
+    reflectVec = Reflect(moveVec, lineA, lineB);
+}
+
+inline void ReflectVector(OUT Vec2D& reflectVec, const Collider& collider, const Collider& otherCollider)
+{
+    ReflectVector(reflectVec, collider.GetPosition(), collider.GetOldPosition(), otherCollider);
 }

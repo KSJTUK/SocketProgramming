@@ -39,6 +39,7 @@
     <ClInclude Include="Collider.h" />
     <ClInclude Include="Listener.h" />
     <ClInclude Include="Object.h" />
+    <ClInclude Include="ObjectPool.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ProcessKeyInput.h" />
     <ClInclude Include="GameServer.h" />

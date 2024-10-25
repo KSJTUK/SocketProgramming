@@ -8,6 +8,8 @@
 * 단 하나만 만들 것
   ---------------------------------------- */
 
+#include "ObjectPool.h"
+
 class GameFramework {
 	// 윈도우 메세지 처리 함수 
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -62,6 +64,9 @@ private:
 	void CreateMyWindow();
 	void RegisterWindow();
 
+	static ObjectPool<class Wall, OBJECT_POOL_MAX::OBJECT_POOL_WALL> walls;
+	static ObjectPool<class Ball, OBJECT_POOL_MAX::OBJECT_POOL_BALL> balls;
+
 private:
 	HWND mEditWindow{ nullptr };
 
@@ -87,8 +92,8 @@ private:
 
 	// draw test
 	std::unique_ptr<class Player> mPlayer{ };
-	std::vector<std::unique_ptr<class Shape>> mShapes;
-	std::vector<std::unique_ptr<class Object>> mObjects;
+	std::vector<class Wall*> mWalls;
+	std::vector<class Ball*> mBalls;
 
 	/* 공유 변수 */
 	std::unordered_map<byte, std::unique_ptr<class Player>> mOtherPlayers{ };

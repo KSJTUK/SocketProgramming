@@ -54,6 +54,8 @@ public:
     void SetPosition(const Vec2D& pos, bool updateOld = false);
     void SetDirection(const Vec2D& dir);
 
+    void Reset();
+
 public:
     // 충돌 처리 관련 함수들
     bool IsEmptyArea() const;

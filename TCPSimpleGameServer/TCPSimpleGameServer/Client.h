@@ -56,7 +56,7 @@ private:
 	Transceiver mTransceiver;
 	ProcessKeyInput mInputProcessor;
 
-	CLIENT_STATE mClientState{ CLIENT_STATE::EXITED };
+	CLIENT_STATE mClientState{ CLIENT_STATE::EXITED }; // Data Race °¡´É¼º
 	byte mId{ NULL_CLIENT_ID };
 
 	int mMoveDirIndex;

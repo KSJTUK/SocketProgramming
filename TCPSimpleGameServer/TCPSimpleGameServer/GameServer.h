@@ -11,6 +11,7 @@
   ---------------------------------------- */
 
 #include "Client.h"
+#include "ObjectPool.h"
 
 class Object;
 
@@ -60,12 +61,12 @@ public:
 
 	void ProcessPacket(char* packet);
 
-	void UpdateCollition(float deltaTime);
+	void UpdateCollision(float deltaTime);
 
 	void SendClientsInfo();
 	void SendObjectsInfo();
-	Object* CreateObject(OBJECT_TYPE objType, Vec2D pos, SizeF size, DWORD color = RGB(255, 255, 255));
-	bool AllocObject(OBJECT_TYPE objType, Vec2D pos, SizeF size, DWORD color=RGB(255, 255, 255));
+	// 정적인 물체의 정보는 한번만 보내줘도 상관없다.
+	void SendStaticObjectInfo(); 
 
 public:
 	/* 게임 월드 작업 관련 함수들 */
@@ -79,6 +80,9 @@ private:
 public:
 	inline static std::atomic<float> mDeltaTime{ };
 
+	static ObjectPool<class Wall, OBJECT_POOL_MAX::OBJECT_POOL_WALL> walls;
+	static ObjectPool<class Ball, OBJECT_POOL_MAX::OBJECT_POOL_BALL> balls;
+
 private:
 	std::unique_ptr<class Listener> mListener;
 	std::unique_ptr<class Timer> mTimer;
@@ -89,6 +93,7 @@ private:
 	std::vector<std::thread> mClientServiceThreads;
 
 	std::vector<std::shared_ptr<Client>> mClients;
-	std::array<bool, MAX_OBJECT> mObjectAlive{ };
-	std::vector<std::unique_ptr<Object>> mObjects;
+
+	std::vector<class Wall*> mWalls;
+	std::vector<class Ball*> mBalls;
 };

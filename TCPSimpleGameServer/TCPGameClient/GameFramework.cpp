@@ -51,6 +51,9 @@ LRESULT GameFramework::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 *
   ---------------------------------------- */
 
+ObjectPool<Wall, OBJECT_POOL_MAX::OBJECT_POOL_WALL> GameFramework::walls;
+ObjectPool<Ball, OBJECT_POOL_MAX::OBJECT_POOL_BALL> GameFramework::balls;
+
 GameFramework::GameFramework() = default;
 
 GameFramework::~GameFramework() = default;
@@ -113,7 +116,8 @@ void GameFramework::CreateObjects()
     mTimer = std::make_unique<Timer>();
     mPlayer = std::make_unique<Player>();
 
-    mObjects.resize(MAX_OBJECT);
+    mWalls.resize(OBJECT_POOL_MAX::OBJECT_POOL_WALL);
+    mBalls.resize(OBJECT_POOL_MAX::OBJECT_POOL_WALL);
 }
 
 void GameFramework::JoinOtherPlayer(const byte id, const Vec2D pos)
@@ -165,19 +169,29 @@ std::shared_ptr<DrawBuffer> GameFramework::GetDrawBuffer() const
 void GameFramework::UpdateObject(PacketObjectInfo* objectInfo)
 {
     int idx = objectInfo->objectIndex;
-    if (not mObjects[idx]) {
-        switch (objectInfo->objectType) {
-        case WALL:
-            mObjects[idx].reset(new Wall{ objectInfo->pos, objectInfo->boxSize, objectInfo->color });
-            break;
+    auto objType = objectInfo->objectType;
 
-        case BULLET:
-            break;
+    switch (objType) {
+    case WALL:
+        if (nullptr == mWalls[idx]) {
+            mWalls[idx] = walls.AcquireObject();
+            mWalls[idx]->SetShape(Shapes::gSquare);
         }
-    }
+        mWalls[idx]->SetSize(objectInfo->boxSize);
+        mWalls[idx]->SetPosition(objectInfo->pos);
+        mWalls[idx]->SetColor(objectInfo->color);
+        break;
 
-    mObjects[idx]->SetPosition(objectInfo->pos);
-    mObjects[idx]->SetColor(objectInfo->color);
+    case BALL:
+        if (nullptr == mBalls[idx]) {
+            mBalls[idx] = balls.AcquireObject();
+            mBalls[idx]->SetShape(Shapes::gSquare);
+        }
+        mBalls[idx]->SetSize(objectInfo->boxSize);
+        mBalls[idx]->SetPosition(objectInfo->pos);
+        mBalls[idx]->SetColor(objectInfo->color);
+        break;
+    }
 }
 
 void GameFramework::OnProcessingWindowMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -279,9 +293,14 @@ void GameFramework::Render()
         otherPlayer->Render();
     }
 
-    for (auto& object : mObjects) {
-        if (object)
-            object->Render(mDrawBuffer);
+    for (auto& wall : mWalls) {
+        if (wall)
+            wall->Render(mDrawBuffer);
+    }
+
+    for (auto& ball : mBalls) {
+        if (ball)
+            ball->Render(mDrawBuffer);
     }
 
     mPlayer->Render();

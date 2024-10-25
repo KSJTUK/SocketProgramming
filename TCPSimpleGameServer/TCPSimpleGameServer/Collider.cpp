@@ -104,6 +104,15 @@ void Collider::SetDirection(const Vec2D& dir)
     mDirection = dir;
 }
 
+void Collider::Reset()
+{
+    mPosition = { };
+    mOldPosition = { };
+    mSize = { };
+    mVelocity = 0.0f;
+    mDirection = directions[MOVE_NONE];
+}
+
 void Collider::SetSize(const SizeF& size)
 {
     mSize = size;

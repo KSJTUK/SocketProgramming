@@ -68,7 +68,7 @@ void Player::Render()
 
 	mShape->Render(mSize, mPosition, mColor, gGameFramework.GetDrawBuffer());
 
-#if DEBUGMODE
-	gLineShape->Render(GetOldPosition(), GetOldPosition() + mSliding, 2, RGB(0, 0, 255), drawBuffer);
-#endif
+//#if DEBUGMODE
+	//gLineShape->Render(GetOldPosition(), GetOldPosition() + mSliding, 2, RGB(0, 0, 255), drawBuffer);
+//#endif
 }
